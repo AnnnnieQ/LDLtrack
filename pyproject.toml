@@ -1,0 +1,34 @@
+[project]
+name = "ldltrack"
+version = "0.1.0"
+description = "Bayesian decision-support tool for personalized LDL-C management"
+authors = [{name = "Anni"}]
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+
+dependencies = [
+    "pymc>=5.10",
+    "arviz>=0.16",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "scipy>=1.11",
+    "matplotlib>=3.8",
+    "plotly>=5.18",
+    "streamlit>=1.30",
+]
+
+[project.optional-dependencies]
+dev = [
+    "jupyter>=1.0",
+    "pytest>=7.4",
+    "ruff>=0.1",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

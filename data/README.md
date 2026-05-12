@@ -36,63 +36,77 @@ Key columns:
 - Data extracted: Table 1 (per 1-kg weight loss at 12 months)
 - Rows: 3 (one per mechanism)
 
+### 3. Chiavaroli L et al. 2018 (Portfolio Diet meta-analysis)
+- *Prog Cardiovasc Dis* 61(1):43-53 | PMID: 29807048
+- 7 trial comparisons, 439 participants with hyperlipidemia (no diabetes, no CVD history)
+- Population: Middle-aged (median 57y), overweight (median BMI 27), hyperlipidemic 
+  (median baseline LDL 4.4 mmol/L = ~170 mg/dL)
+- Intervention: Portfolio dietary pattern (4 components: nuts, plant protein, viscous 
+  fibre, plant sterols) on background of NCEP Step II diet
+- Data extracted: Page 7 sensitivity analysis (efficacy vs effectiveness subsets)
+- Rows: 2 (separated by adherence level)
+  - **Efficacy** (5 trials, n=94, metabolically-controlled feeding, >90% adherence): 
+    **-21%** LDL (95% CI: -23 to -17%)
+  - **Effectiveness** (2 trials, n=345, dietary advice only, <50% adherence): 
+    **-11%** LDL (95% CI: -14 to -9%)
+- GRADE: HIGH certainty for LDL-C
+- Notes: Both subsets show I² = 0% (no within-group heterogeneity), confirming adherence 
+  is the primary driver of variability in pooled analyses.
+
 ## Important Caveats
 
 ### Weight Loss Effects and BMI Extrapolation
 Hasan 2020 reports effects in a population with **mean BMI 36.3 kg/m²** (severely obese).
-The per-kg effect values (lifestyle: -1.28 mg/dL/kg; pharma: -1.67 mg/dL/kg) are population means.
+The per-kg effect values (lifestyle: -1.28 mg/dL/kg; pharma: -1.67 mg/dL/kg) are 
+population means.
 
 **Why this matters**:
 - LDL response to weight loss may differ across BMI ranges
-- We do **NOT** rescale effects based on user BMI (no BMI-stratified data available)
-- The Bayesian model will use **wider priors** for weight_change interventions to reflect
+- We do NOT rescale effects based on user BMI (no BMI-stratified data available)
+- The Bayesian model will use wider priors for weight_change interventions to reflect
   generalizability uncertainty
 - The tool's UI will warn users with BMI < 30 that effects are extrapolated from a 
   different population
 
-**Future improvement**: Search for BMI-stratified meta-analyses in Week 4-5 if available.
+### Portfolio Diet Adherence Variability
+Chiavaroli 2018 reveals striking adherence-dependent effects, encoded as two rows:
+
+| Adherence | LDL Reduction | n trials | n patients |
+|-----------|---------------|----------|------------|
+| Strict (foods provided) | **-21%** | 5 | 94 |
+| Real-world (advice only) | **-11%** | 2 | 345 |
+
+Both subsets show I² = 0% (no within-group heterogeneity), so adherence is the primary 
+driver of the variability seen in pooled analyses. This duality lets users in the tool 
+select expected adherence rather than getting a single averaged estimate.
+
+### Portfolio Diet NCEP Background
+All Portfolio Diet effects are measured **on top of** an NCEP Step II diet (≤30% fat, 
+<7% saturated fat, <200 mg/day cholesterol). The Portfolio Diet alone (without NCEP 
+background) has not been studied in this meta-analysis. Users on typical Western diets 
+may see additional benefit from baseline diet modification before adding Portfolio 
+components.
 
 ### Time-Course of Effects
-Different interventions take different times to reach full effect. The CSV currently
-records 12-month effects, but `notes` column documents the time-course where known:
-- Statins: stable effect at 4-6 weeks
-- Weight loss (lifestyle): gradual buildup, ~30% at 3mo, ~70% at 6mo, full at 12mo
-- Weight loss (pharma): faster buildup, peaks around 6mo
-- Bariatric surgery: rapid initial change, plateau at 12mo
+Different interventions take different times to reach full effect. The CSV currently 
+records 12-month effects (for time-dependent interventions like weight loss) or trial 
+endpoint effects (for pharmacologic interventions). The `notes` column documents 
+time-course information where known.
 
-**MVP approach**: Use 12-month values as default predictions.
-**V2 expansion (Week 4-5)**: Add time horizon selector (3mo / 6mo / 12mo).
+**MVP approach**: Use trial endpoint / 12-month values as default predictions.
+**V2 expansion (Week 4-5)**: Add time horizon selector and progressive effect curves.
 
 ### Statistical Heterogeneity (I²)
 Hasan 2020 reports very high I² (>80%) for LDL effects, indicating substantial 
-between-trial heterogeneity. This is reflected in the wide confidence intervals and
+between-trial heterogeneity. This is reflected in the wide confidence intervals and 
 will be modeled via wider Bayesian priors for these interventions.
 
 ### Statistical Significance
-- Bariatric surgery's per-kg LDL effect (-0.33 mg/dL) **is NOT statistically significant** 
+- Bariatric surgery's per-kg LDL effect (-0.33 mg/dL) is **NOT statistically significant** 
   (CI: -0.77 to +0.10 crosses zero). This is preserved in the CSV but the Bayesian model 
   will treat this as a high-uncertainty estimate.
 
-### Bariatric Surgery LDL Effect Surprising Finding
-Despite producing the largest weight loss, bariatric surgery has the **smallest per-kg
-LDL effect** (and is not statistically significant). This reflects mechanism-specific
+### Bariatric Surgery — Surprising Finding
+Despite producing the largest weight loss, bariatric surgery has the smallest per-kg 
+LDL effect (and is not statistically significant). This reflects mechanism-specific 
 effects beyond simple weight reduction. The tool's UI should educate users on this.
-
-## Planned Additions
-
-The following papers are candidates for data extraction in upcoming days:
-
-### Week 1 remaining (Days 4-5)
-- Chiavaroli L et al. (2018). Portfolio Diet meta-analysis. *Prog Cardiovasc Dis* | PMID: 29807048
-- Brown L et al. (1999). Soluble fiber meta-analysis. *Am J Clin Nutr* | PMID: 9925120
-- Ras RT et al. (2014). Plant sterols dose-response meta-analysis | PMID: 24780031
-- Smart NA et al. (2024). Exercise meta-analysis. *Sports Medicine* | PMID: 39331324
-- Cannon CP et al. (2015). IMPROVE-IT (ezetimibe + statin) | PMID: 26039521
-- Sabatine MS et al. (2017). FOURIER (PCSK9 inhibitor) | PMID: 28304224
-
-### Week 4 (statin coverage expansion)
-- Jones PH et al. (2003). STELLAR trial — multi-statin head-to-head | PMID: 12888132
-- Heart Protection Study (HPS, 2002): simvastatin 40mg
-- CARDS (Colhoun 2004): atorvastatin 10mg in diabetes | PMID: 15325833
-- ASCOT-LLA (Sever 2003): atorvastatin 10mg in hypertension | PMID: 12686036
-- JUPITER (Ridker 2008): rosuvastatin 20mg primary prevention | PMID: 18997196

@@ -40,3 +40,22 @@ Review and Meta-Analysis."
 - Rows in dataset: 3 (one per mechanism)
 - Verification status: All 3 effect estimates verified against Table 1; sample sizes verified
   against Results text; baseline LDL values verified against Figure 2
+
+## 3. Chiavaroli L, Nishi SK, Khan TA, et al. (2018)
+
+**Title**: "Portfolio Dietary Pattern and Cardiovascular Disease: A Systematic Review 
+and Meta-analysis of Controlled Trials."
+
+- Journal: *Progress in Cardiovascular Diseases* 2018;61(1):43-53
+- PMID: 29807048
+- Study type: Systematic review + meta-analysis with GRADE assessment
+- Sample: 7 trial comparisons, 439 participants with hyperlipidemia
+- Data extracted: Page 7 (efficacy/effectiveness sensitivity analysis) and Figure 2 (overall pooled)
+- Rows in dataset: 2 (efficacy and effectiveness subgroups)
+  - Efficacy: -0.87 mmol/L (-21%), 5 trials, n=94
+  - Effectiveness: -0.50 mmol/L (-11%), 2 trials, n=345
+- GRADE certainty: HIGH for LDL-C
+- Verification status: Subset estimates verified against Page 7 text; unit conversion verified.
+- Rationale for 2 rows: 10 percentage-point difference between subsets reflects fundamentally 
+  different real-world scenarios (idealized vs typical adherence), supporting separate 
+  modeling rather than averaging.

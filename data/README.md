@@ -52,6 +52,81 @@ Key columns:
 - GRADE: HIGH certainty for LDL-C
 - Notes: Both subsets show I² = 0% (no within-group heterogeneity), confirming adherence 
   is the primary driver of variability in pooled analyses.
+  
+  ## Source 4: Brown 1999 (Soluble Fiber)
+
+**Citation**: Brown L, Rosner B, Willett WW, Sacks FM. Cholesterol-lowering 
+effects of dietary fiber: a meta-analysis. *Am J Clin Nutr* 1999;69(1):30-42. 
+PMID: 9925120.
+
+**Study design**: Meta-analysis of 67 controlled trials, total ~2990 participants.
+Linear regression on type and dose of soluble fiber.
+
+**Rows added**: 4 (1 overall pooled + 3 by fiber type: oat, psyllium, pectin)
+
+**Why 4 rows**:
+- Paper reports both pooled "all fibers" effect and by-type effects in Table 2
+- Abstract claims "no significant difference between oat, psyllium, pectin"
+  (statistical claim: CIs overlap)
+- Point estimates differ: oat -1.43, psyllium -2.59, pectin -2.13 mg/dL/g
+- Both pooled and by-type rows preserved for modeling flexibility in Week 2
+- Guar gum excluded: paper reports insufficient data in practical dose range
+
+**Dose range decision**: Used **practical range (≤8 g/d for LDL)** data only,
+not full range (2-30 g/d). Reasons:
+- Paper footnote 2: dose response is non-linear at higher doses
+- Abstract's headline -0.057 mmol/L/g figure is from practical range
+- Real-world users consume 2-10 g/d soluble fiber, matching this range
+- Full range estimates would systematically underestimate effect at typical doses
+
+**Unit conversion**: Paper reports in mmol/L/g. Converted to mg/dL/g using 
+factor 38.67 (per paper's Table 2 footnote 3: divide by 0.02586).
+All 4 row values verified by manual calculation.
+
+**Effect sizes** (per gram soluble fiber daily, practical dose range):
+
+| Row | n studies | n subjects | LDL (mg/dL/g) | 95% CI |
+|-----|-----------|------------|---------------|--------|
+| Overall pooled | 22 | 1,151 | -2.20 | -2.71, -1.70 |
+| Oat products | 13 | 867 | -1.43 | -1.55, -1.31 |
+| Psyllium | 4 | 151 | -2.59 | -5.65, -0.54 |
+| Pectin | 4 | 117 | -2.13 | -3.36, -0.85 |
+
+**`on_top_of` decision**: NA. Paper explicitly tests background diet as 
+covariate and finds effect is independent of background dietary fat content 
+(Results paragraph 4). Contrast with Chiavaroli 2018 where Portfolio Diet 
+effect is on top of NCEP Step II diet — there `on_top_of` field is populated.
+
+**Population caveat**: Mixed sample across the 67 trials per Table 1:
+21 healthy / 30 hyperlipidemic / 9 DM / 5 DM+hyperlipidemic / 2 other.
+Mean baseline LDL = 4.25 ± 0.72 mmol/L = 164 ± 28 mg/dL.
+Effect may differ in users with much lower baseline LDL (<130 mg/dL); 
+% effect likely similar, absolute effect likely smaller.
+
+**Methodology caveat**: Pre-GRADE methodology (1999 paper). Quality assessment
+not done by modern systematic review standards. Treat as moderate-quality
+evidence despite large trial count.
+
+---
+
+## Known Schema Issues (to revisit in Week 4)
+
+**`population` column inconsistency**: Current granularity varies across rows:
+- VOYAGER rows use short labels (e.g., `ASCVD`, `diabetes`)
+- Hasan/Chiavaroli/Brown rows use long composite strings 
+  (e.g., `hyperlipidemic_adults_no_DM_no_CVD`)
+- Long strings encode multiple dimensions in one field (lipid status + 
+  comorbidities + baseline values), violating one-fact-per-column principle
+- Some information is redundant with `baseline_ldl_mg_dl` column
+
+**Planned resolution (Week 4)**: Split `population` into orthogonal columns:
+`population_category`, `has_dm`, `has_cvd`, `baseline_bmi`, etc. 
+Decision deferred until all Week 1 papers extracted to see full schema needs.
+
+**`intervention_subtype` semantics**: Currently used for both mechanism 
+classification (e.g., `via_diet_exercise`) and chemical classification 
+(e.g., `soluble_fiber_beta_glucan`). May need to split into two fields, 
+or accept as a flexible "细分维度" field. Revisit Week 4.
 
 ## Important Caveats
 

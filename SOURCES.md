@@ -59,3 +59,25 @@ and Meta-analysis of Controlled Trials."
 - Rationale for 2 rows: 10 percentage-point difference between subsets reflects fundamentally 
   different real-world scenarios (idealized vs typical adherence), supporting separate 
   modeling rather than averaging.
+
+## 4. Brown L, Rosner B, Willett WW, Sacks FM (1999)
+
+**Title**: Cholesterol-lowering effects of dietary fiber: a meta-analysis
+
+**Journal**: American Journal of Clinical Nutrition 69(1):30-42
+
+**PMID**: 9925120
+
+**Type**: Meta-analysis of 67 controlled trials, ~2990 participants total
+
+**Used for**: Soluble fiber LDL effects (`intervention_category=fiber`)
+
+**Rows in CSV**: 4 — `BROWN_1999_overall`, `BROWN_1999_oat`, 
+`BROWN_1999_psyllium`, `BROWN_1999_pectin`
+
+**Key data extracted**: Per-gram LDL change in practical dose range (≤8 g/d).
+Overall pooled: -2.20 mg/dL/g (95% CI: -2.71, -1.70).
+
+**Methodology caveats**: Pre-GRADE methodology; effect is "small but real" 
+per paper's own conclusion; guar gum excluded due to insufficient data 
+in practical dose range.

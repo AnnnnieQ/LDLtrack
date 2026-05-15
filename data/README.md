@@ -107,6 +107,161 @@ Effect may differ in users with much lower baseline LDL (<130 mg/dL);
 not done by modern systematic review standards. Treat as moderate-quality
 evidence despite large trial count.
 
+## Source 5: Ras 2014 (Plant Sterols and Stanols)
+
+**Citation**: Ras RT, Geleijnse JM, Trautwein EA. LDL-cholesterol-lowering 
+effect of plant sterols and stanols across different dose ranges: a 
+meta-analysis of randomised controlled studies. *Br J Nutr* 
+2014;112(2):214-219. PMID: 24780090.
+
+**Study design**: Meta-analysis of 124 RCT studies (201 study arms), 
+~9,648 subjects total (estimated at avg 48 subjects/arm). Random-effects 
+model weighted by inverse variance.
+
+**Rows added**: 6 (one per dose bin: <1.0, 1.0-1.5, 1.5-2.0, 2.0-2.5, 
+2.5-3.0, 3.0-4.0 g/d)
+
+**Why 6 rows (dose-response structure)**:
+- Paper's core contribution is the dose-response curve, not a single 
+  pooled effect estimate
+- Each dose bin provides an independent effect + CI, supporting Bayesian 
+  dose-response modeling in Week 2
+- 6 rows mirror the paper's Table 1 structure exactly
+
+**Why combined (sterols + stanols pooled), not separated**:
+- Paper's main conclusion: sterols and stanols have comparable 
+  dose-response relationships (rejects earlier Musa-Veloso 2011 claim 
+  that stanols are more effective)
+- Low-dose stanol data is statistically weak (n=1 arm at <1.0 g/d, CI 
+  crosses zero)
+- Users don't distinguish sterols vs stanols in practice (most 
+  PS-enriched products don't specify on label)
+
+**Dose range decision**: Used dose bins ≤4 g/d only. Paper explicitly 
+excludes >4 g/d data from pooling (scarce, scattered across 5.8-9.0 g/d).
+Tool should warn users if input dose exceeds 4 g/d.
+
+**Effect sizes** (% LDL change vs placebo, by dose bin):
+
+| Bin (g/d) | Avg dose | Combined effect | 95% CI |
+|-----------|----------|-----------------|--------|
+| <1.0 | 0.6 | -5.7% | -7.1, -4.4 |
+| 1.0-1.5 | 1.1 | -6.4% | -8.2, -4.6 |
+| 1.5-2.0 | 1.7 | -7.6% | -8.4, -6.8 |
+| 2.0-2.5 | 2.1 | -8.4% | -9.2, -7.6 |
+| 2.5-3.0 | 2.6 | -10.3% | -11.8, -8.9 |
+| 3.0-4.0 | 3.3 | -12.4% | -13.6, -11.2 |
+
+**`on_top_of` decision**: NA. Studies compare PS-enriched food vs placebo 
+food (e.g., margarine with PS vs margarine without). No specific 
+background diet required.
+
+**`n` field convention**: Subjects estimated at 48/arm (paper-reported 
+average). Paper's Table 1 reports study arm counts (24/13/55/60/17/27), 
+not bin-level subject counts. This is an estimate, not paper-reported value.
+See Known Schema Issues below for broader `n` field semantic problem.
+
+**Population caveat**: Mixed normocholesterolemic to mildly 
+hypercholesterolemic adults. Paper does not stratify baseline LDL by 
+dose bin (`baseline_ldl_mg_dl` = NA for all 6 rows). Paper discussion 
+notes baseline LDL is an effect modifier — effect may be larger in 
+users with higher baseline LDL.
+
+**Real-world adherence caveat**: Paper notes actual users of PS-enriched 
+foods consume on average ~1 g/d (well below 2-3 g/d recommendation). 
+Tool should set realistic expectations: while data supports -12% at 
+3 g/d, sustained 3 g/d intake is uncommon.
+
+**Conflict of interest note**: Two authors (Ras, Trautwein) employed by 
+Unilever, which markets PS-enriched products. Third author (Geleijnse) 
+has no conflict. Findings are consistent with prior independent 
+meta-analyses (Demonty 2009, Musa-Veloso 2011) on overall dose-response.
+
+## Source 6: Smart 2024 (Exercise Training)
+
+**Citation**: Smart NA, Downes D, van der Touw T, Hada S, Dieberg G, 
+Pearson MJ, Wolden M, King N, Goodman SPJ. The Effect of Exercise 
+Training on Blood Lipids: A Systematic Review and Meta-analysis. 
+*Sports Medicine* 2025;55(1):67-78 (epub 2024 Sep 27). PMID: 39331324.
+
+**Study design**: Meta-analysis of 148 RCTs with 227 intervention groups, 
+8,673 participants total (5,273 exercise / 3,400 sedentary control). For 
+LDL analysis specifically: 178 intervention groups, 4,143 exercise + 
+2,724 control. Random-effects model with Trial Sequence Analysis (TSA) 
+confirming statistical futility for all five lipid outcomes (sufficient 
+information size reached).
+
+**Rows added**: 2
+
+**Why 2 rows (modality matters)**:
+- Paper reports overall pooled LDL effect of -7.22 mg/dL (95% CI -9.08, 
+  -5.35) across all 178 intervention groups
+- However, paper Section 3.5 and Figure 7 explicitly show this pooled 
+  effect masks important modality differences:
+  - AT (aerobic, 164 groups, 92% of pooled): significantly reduces LDL
+  - CT (combined AT+RT, 31 groups): largest LDL reduction, significant
+  - RT (resistance only, 32 groups): NO LDL effect (only HDL benefit)
+- Paper does NOT provide numeric values + CIs separately for AT/CT/RT 
+  in LDL — only visualized in Figure 7 bar chart
+- Therefore: 2 rows reflect what paper actually reports in numeric form:
+  - Row 1: aerobic_or_combined_AT_CT — uses paper's overall -7.22 figure
+    (acknowledging this is dominated by AT at 92% weight, applies only to 
+    users selecting aerobic or combined exercise)
+  - Row 2: resistance_only — qualitative null finding (effect = 0, no CI), 
+    documents paper's text claim that RT alone does not lower LDL
+
+**Why not separate AT vs CT into different rows**: Paper does not provide 
+numeric CIs for AT-only or CT-only LDL effects. Estimating from Figure 7 
+bar chart would violate the data traceability principle (every number 
+must be traceable to a paper's explicit numeric report, not inferred from 
+visualizations).
+
+**Unit decision**: `mg_dL` (absolute mean difference). Paper uses 
+mg/dL as primary unit (also reports mmol/L). Unlike Ras 2014 (% change) 
+or Brown 1999 (per-gram), Smart 2024 reports cross-trial pooled absolute 
+effect because trials used widely varying exercise doses/durations and 
+% change normalization across trials isn't appropriate.
+
+**Effect size**:
+
+| Row | Modality | LDL change | 95% CI |
+|-----|----------|-----------|--------|
+| Aerobic or Combined | AT or CT | -7.22 mg/dL | -9.08, -5.35 |
+| Resistance only | RT alone | 0 mg/dL (null) | N/A (paper text only) |
+
+**`on_top_of` decision**: NA. Paper notes 78% of studies had unknown or 
+mixed lipid-lowering medication use, which is a confounding limitation. 
+Effect estimates are NOT explicitly "on top of statin" — they represent 
+exercise vs no exercise, with medication status mixed/uncontrolled.
+
+**Population caveat**: Adults excluded for CVD, cancer, spinal cord 
+injury, HIV, pregnancy. Mixed BMI/age. Paper does not stratify by 
+baseline LDL — `baseline_ldl_mg_dl` is NA. Effect may differ for 
+hyperlipidemic users.
+
+**Prediction interval caveat**: Paper's 95% prediction interval for LDL 
+is -23.54 to +9.10 mg/dL, meaning 27.9% of individual studies showed 
+NO benefit from exercise on LDL. Tool should communicate this 
+heterogeneity — individual user response is highly variable.
+
+**Clinical context (from paper Section 4.7)**: Exercise-induced LDL 
+reduction of 7.22 mg/dL corresponds to approximately 4-5% reduction in 
+cardiovascular atherosclerotic event risk (based on Mach et al. 2020 
+ESC/EAS Guidelines: every 38.5 mg/dL LDL reduction = 21-25% CVD risk 
+reduction). Far below the 50% LDL reduction target for statin therapy. 
+Whether exercise + statin effects are additive is an open question per 
+paper itself (Section 4.7).
+
+**Methodology strengths**: 
+- Trial Sequence Analysis confirms statistical futility (no more trials 
+  needed to confirm direction of effect)
+- Random-effects model
+- Pre-registered protocol (OSF)
+- Most comprehensive exercise + lipids meta-analysis to date
+
+**Methodology weaknesses**:
+- 78% of include
+
 ---
 
 ## Known Schema Issues (to revisit in Week 4)
@@ -126,7 +281,57 @@ Decision deferred until all Week 1 papers extracted to see full schema needs.
 **`intervention_subtype` semantics**: Currently used for both mechanism 
 classification (e.g., `via_diet_exercise`) and chemical classification 
 (e.g., `soluble_fiber_beta_glucan`). May need to split into two fields, 
-or accept as a flexible "细分维度" field. Revisit Week 4.
+or accept as a flexible sub-classification dimension. Revisit Week 4.
+
+**`n` column semantic inconsistency**: Currently the `n` field contains 
+five different meanings across rows:
+
+| Paper | Semantic | Example values |
+|-------|----------|----------------|
+| VOYAGER | patient exposures (IPD level) | 1147, 1726, 2423 |
+| Hasan 2020 | subjects in mechanism subset | 2434, 16333, 377 |
+| Chiavaroli 2018 | subjects in trial sub-analysis | 94, 345 |
+| Brown 1999 | subjects in dose range | 1151, 867, 151, 117 |
+| Ras 2014 | estimated subjects (arms × avg 48) | 1152, 624, 2640, ... |
+
+Mixing these in one field is risky for Bayesian likelihood weighting 
+(patient exposures ≠ unique subjects ≠ estimated subjects). Week 2 
+modeling will use SE/CI for likelihood rather than n directly, 
+sidestepping this issue for MVP.
+
+**Planned resolution (Week 4)**: Split `n` into three orthogonal columns:
+- `n_subjects` — unique participant count (single RCTs, meta-analysis subsets)
+- `n_arms` or `n_strata` — study arms in meta-analyses
+- `n_exposures` — IPD-level exposures (VOYAGER-style data)
+
+Each row populates only the relevant column(s), others NA. This preserves 
+all source information without conflating semantics.
+
+**`ldl_change_unit` heterogeneity (expected, documented)**: Effect sizes 
+are recorded in 4 different units across rows:
+
+| Unit | Used by | Meaning |
+|------|---------|---------|
+| `percent` | VOYAGER, Chiavaroli, Ras 2014 | % change in LDL from baseline |
+| `mg_dL` | Smart 2024 | Absolute mg/dL change (mean difference) |
+| `mg_dL_per_kg` | Hasan 2020 | mg/dL change per 1 kg weight loss |
+| `mg_dL_per_g` | Brown 1999 | mg/dL change per 1 g soluble fiber |
+
+This heterogeneity reflects real differences in how source papers report 
+effects — it is not a schema bug. Each paper uses its most natural unit.
+
+**Week 2 modeling implications**:
+1. Bayesian likelihood must be unit-aware. Rows with different units 
+   should NOT be pooled in the same likelihood term.
+2. User-facing output should convert all effects to a single unit 
+   (recommended: absolute mg/dL) using:
+   - `percent` → `mg_dL`: multiply by user's baseline_ldl / 100
+   - `mg_dL_per_X` → `mg_dL`: multiply by user input X
+3. Combining multiple interventions is NOT additive in absolute mg/dL.
+   Use multiplicative model on % change scale:
+   final_LDL = baseline × (1 - effect_1_pct) × (1 - effect_2_pct) × ...
+4. `baseline_ldl_mg_dl` column is essential for percent → absolute 
+   conversion at prediction time.
 
 ## Important Caveats
 

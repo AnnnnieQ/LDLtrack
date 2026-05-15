@@ -81,3 +81,57 @@ Overall pooled: -2.20 mg/dL/g (95% CI: -2.71, -1.70).
 **Methodology caveats**: Pre-GRADE methodology; effect is "small but real" 
 per paper's own conclusion; guar gum excluded due to insufficient data 
 in practical dose range.
+
+## 5. Ras RT, Geleijnse JM, Trautwein EA (2014)
+
+**Title**: LDL-cholesterol-lowering effect of plant sterols and stanols 
+across different dose ranges: a meta-analysis of randomised controlled 
+studies
+
+**Journal**: British Journal of Nutrition 112(2):214-219
+
+**PMID**: 24780090
+
+**Type**: Meta-analysis of 124 RCT studies (201 study arms), 
+random-effects model
+
+**Used for**: Plant sterols/stanols dose-response LDL effects 
+(`intervention_category=plant_sterols`)
+
+**Rows in CSV**: 6 — `RAS_2014_dose1` through `RAS_2014_dose6` 
+(one per dose bin, 0.6-3.3 g/d)
+
+**Key data extracted**: Dose-response curve for combined sterols + 
+stanols. Effect ranges from -5.7% (0.6 g/d) to -12.4% (3.3 g/d).
+
+**Methodology caveats**: Open access (CC-BY 3.0); two authors employed 
+by Unilever (PS product manufacturer); paper excludes >4 g/d data due 
+to scarcity; sterols and stanols pooled per paper's main finding of 
+comparable efficacy.
+
+## 6. Smart NA, Downes D, van der Touw T, Hada S, Dieberg G, Pearson MJ, Wolden M, King N, Goodman SPJ (2024)
+
+**Title**: The Effect of Exercise Training on Blood Lipids: A Systematic 
+Review and Meta-analysis
+
+**Journal**: Sports Medicine 55(1):67-78 (epub 2024 Sep 27)
+
+**PMID**: 39331324
+
+**Type**: Meta-analysis of 148 RCTs with 227 intervention groups, 
+8,673 participants total. Trial Sequence Analysis confirms statistical 
+futility.
+
+**Used for**: Exercise effects on LDL (`intervention_category=exercise`)
+
+**Rows in CSV**: 2 — `SMART_2024_aerobic_or_combined` (paper's -7.22 mg/dL 
+pooled across AT and CT), `SMART_2024_resistance_only` (qualitative null 
+finding per paper Section 3.5)
+
+**Key data extracted**: Overall LDL pooled effect (-7.22 mg/dL, 95% CI 
+-9.08 to -5.35). Modality breakdown: AT/CT significant, RT no effect.
+
+**Methodology caveats**: Open access (CC-BY 4.0); 78% of studies had 
+moderate-to-low quality (TESTEX <10); 78% had medication confound; high 
+heterogeneity (I² > 75%); prediction interval crosses zero (27.9% of 
+studies showed no LDL benefit).

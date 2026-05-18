@@ -262,6 +262,95 @@ paper itself (Section 4.7).
 **Methodology weaknesses**:
 - 78% of include
 
+## Source 7: Cannon 2015 (IMPROVE-IT — Ezetimibe Added to Statin)
+
+**Citation**: Cannon CP, Blazing MA, Giugliano RP, et al. Ezetimibe Added 
+to Statin Therapy after Acute Coronary Syndromes. *New England Journal of 
+Medicine* 2015;372(25):2387-2397. PMID: 26039521.
+
+**Trial name**: IMPROVE-IT (IMProved Reduction of Outcomes: Vytorin 
+Efficacy International Trial)
+
+**Study design**: Single large RCT, double-blind, placebo-controlled. 
+N=18,144 patients post-ACS (within 10 days of acute coronary syndrome), 
+randomized 1:1 to simvastatin 40mg + ezetimibe 10mg vs simvastatin 40mg + 
+placebo. Median 6-year follow-up. Primary endpoint: composite of CV death, 
+nonfatal MI, unstable angina requiring rehospitalization, coronary 
+revascularization (≥30 days post-randomization), or nonfatal stroke.
+
+**Rows added**: 1
+
+**Why 1 row**: Single RCT, single intervention (ezetimibe 10mg), single 
+comparison (vs placebo on top of identical simvastatin background). No 
+subgroup analysis needed for MVP — paper reports consistent benefit 
+across nearly all prespecified subgroups (Fig. S2).
+
+**Effect size decision (-24% over `percent` unit)**:
+- Paper reports three related LDL difference figures:
+  - 1-year mean LDL: 69.9 (statin) vs 53.2 (statin+ezetimibe) = 
+    -16.7 mg/dL absolute, **~24% relative on top of statin baseline**
+  - Time-weighted 6-year average: 69.5 vs 53.7 = -15.8 mg/dL
+  - Imputed difference (CTT methodology): 12.8 mg/dL
+- Chose -24% (percent) as the headline figure because:
+  - Paper Discussion uses this as primary characterization
+  - `percent` unit aligns with VOYAGER, Chiavaroli, Ras 2014 rows
+  - Cross-baseline applicable (users on statin with LDL 70 or 80 get 
+    same -24%)
+
+**`baseline_ldl_mg_dl=69.5` decision**: This is the statin-alone group's 
+time-weighted average LDL, NOT the randomization-baseline LDL (which was 
+93.8 mg/dL pre-statin-titration). Rationale: ezetimibe's -24% effect is 
+measured against "already-on-statin LDL", so for user-facing prediction, 
+the relevant baseline is "LDL while on statin". Users entering "I'm on 
+statin with LDL 70 considering adding ezetimibe" will get correct 
+prediction: 70 × 0.76 = 53 mg/dL.
+
+**`on_top_of=simvastatin_40mg_moderate_intensity`**: First non-NA value 
+for this field in the dataset. This row should not be applied as 
+standalone effect — only as additive to a statin background. Note: paper 
+used simvastatin 40mg (moderate intensity); ezetimibe + high-intensity 
+statin combination has NOT been studied in equivalent RCT, so 
+extrapolation beyond moderate statin background carries uncertainty.
+
+**CI/SE not available**: Paper reports LDL difference with P<0.001 but no 
+explicit CI for the LDL change itself. CIs reported (0.89-0.99) are for 
+the primary clinical endpoint HR (0.936), not for LDL change. Therefore 
+`ldl_change_se`, `ci_low`, `ci_high` are all NA. This is the first row 
+with this CI pattern — see Known Schema Issues for handling guidance.
+
+**Clinical context (CVD risk reduction)**:
+- 7-year primary endpoint event rate: 34.7% (statin) vs 32.7% 
+  (statin+ezetimibe), absolute risk reduction 2.0 percentage points
+- HR 0.936 (95% CI 0.89-0.99), P=0.016
+- NNT = 50 (one CV event prevented per 50 patients treated for 7 years)
+- Translates to ~6.4% relative reduction in major vascular events
+- Per Mach 2020 formula (every 38.5 mg/dL LDL reduction → 21-25% CVD 
+  risk reduction), expected reduction would be ~9.4%; observed 6.4% is 
+  in the expected range
+
+**Landmark significance**: IMPROVE-IT was the first large RCT to:
+1. Prove a non-statin LDL-lowering agent reduces hard CVD outcomes
+2. Demonstrate "lower is better" extends below LDL 70 mg/dL
+3. Influence ACC/AHA 2018 and ESC/EAS 2019 guideline shifts toward 
+   stricter LDL targets (<70 for high-risk, <55 for very-high-risk)
+
+**Population caveat**: Trial enrolled post-ACS patients only (secondary 
+prevention, high CVD risk). Effect may not generalize to:
+- Primary prevention populations (no prior ASCVD)
+- Users not on statin background
+- Users on high-intensity statin (paper used moderate-intensity 
+  simvastatin 40mg)
+
+**Safety**: No significant differences vs statin alone for muscle, 
+gallbladder, hepatic adverse effects, or cancer. Ezetimibe is well-
+tolerated when added to statin. Hemorrhagic stroke nonsignificantly 
+higher with ezetimibe (0.8% vs 0.6%, P=0.11) — small absolute numbers.
+
+**Funding disclosure**: Trial funded by Merck (ezetimibe manufacturer). 
+Independent data analysis by DCRI. Results published in NEJM with 
+extensive peer review. Findings have been independently replicated and 
+incorporated into multiple international guidelines.
+
 ---
 
 ## Known Schema Issues (to revisit in Week 4)
@@ -332,6 +421,21 @@ effects — it is not a schema bug. Each paper uses its most natural unit.
    final_LDL = baseline × (1 - effect_1_pct) × (1 - effect_2_pct) × ...
 4. `baseline_ldl_mg_dl` column is essential for percent → absolute 
    conversion at prediction time.
+   
+   **Some single RCTs report LDL change without CI**: Papers like Cannon 2015 
+(IMPROVE-IT) report mean LDL change with P-value but no LDL-specific 
+confidence interval. The CIs reported in such papers are typically for 
+clinical endpoint HRs (e.g., for major adverse cardiovascular events), 
+NOT for the LDL change itself. For such rows:
+- `ldl_change_se`, `ci_low`, `ci_high` are all NA
+- Bayesian likelihood in Week 2 must impute uncertainty using one of:
+  - SE imputed from P-value and sample size formulas
+  - Subjective prior reflecting "large trial, narrow uncertainty"
+  - Treat as descriptive only, exclude from likelihood
+- Document choice in modeling code
+
+This is distinct from meta-analyses (Brown, Ras, Chiavaroli, Smart) which 
+typically DO report LDL-specific CIs.
 
 ## Important Caveats
 

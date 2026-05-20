@@ -135,3 +135,8 @@ finding per paper Section 3.5)
 moderate-to-low quality (TESTEX <10); 78% had medication confound; high 
 heterogeneity (I² > 75%); prediction interval crosses zero (27.9% of 
 studies showed no LDL benefit).
+
+- **Sabatine 2017 (FOURIER)**: Sabatine MS et al. Evolocumab and Clinical Outcomes in 
+  Patients with Cardiovascular Disease. *N Engl J Med* 2017;376:1713-22. PMID: 28304224.
+  Single RCT, N=27,564 ASCVD patients on statin, evolocumab vs placebo. -59% LDL at 
+  48wk; CV event HR 0.85.

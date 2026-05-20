@@ -52,8 +52,8 @@ Key columns:
 - GRADE: HIGH certainty for LDL-C
 - Notes: Both subsets show I² = 0% (no within-group heterogeneity), confirming adherence 
   is the primary driver of variability in pooled analyses.
-  
-  ## Source 4: Brown 1999 (Soluble Fiber)
+
+## Source 4: Brown 1999 (Soluble Fiber)
 
 **Citation**: Brown L, Rosner B, Willett WW, Sacks FM. Cholesterol-lowering 
 effects of dietary fiber: a meta-analysis. *Am J Clin Nutr* 1999;69(1):30-42. 
@@ -252,7 +252,7 @@ reduction). Far below the 50% LDL reduction target for statin therapy.
 Whether exercise + statin effects are additive is an open question per 
 paper itself (Section 4.7).
 
-**Methodology strengths**: 
+**Methodology strengths**:
 - Trial Sequence Analysis confirms statistical futility (no more trials 
   needed to confirm direction of effect)
 - Random-effects model
@@ -260,7 +260,16 @@ paper itself (Section 4.7).
 - Most comprehensive exercise + lipids meta-analysis to date
 
 **Methodology weaknesses**:
-- 78% of include
+- 78% of included trials had unknown or mixed lipid-lowering medication 
+  status, confounding the "exercise effect" estimate (cannot cleanly 
+  separate exercise contribution from concurrent statin use)
+- Most trials short duration (typically 12-26 weeks); long-term sustained 
+  exercise effects on LDL not well characterized
+- Substantial heterogeneity across trials in exercise dose, intensity, 
+  duration, and modality limits precision for any specific prescription
+- Wide 95% prediction interval (-23.54 to +9.10 mg/dL) indicates ~28% of 
+  individual studies showed no LDL benefit — pooled mean obscures 
+  responder/non-responder variability
 
 ## Source 7: Cannon 2015 (IMPROVE-IT — Ezetimibe Added to Statin)
 
@@ -351,11 +360,98 @@ Independent data analysis by DCRI. Results published in NEJM with
 extensive peer review. Findings have been independently replicated and 
 incorporated into multiple international guidelines.
 
+## Source 8: Sabatine 2017 (FOURIER — Evolocumab PCSK9i Added to Statin)
+
+**Citation**: Sabatine MS, Giugliano RP, Keech AC, et al. Evolocumab and 
+Clinical Outcomes in Patients with Cardiovascular Disease. *New England 
+Journal of Medicine* 2017;376(18):1713-22. PMID: 28304224.
+
+**Trial name**: FOURIER (Further Cardiovascular Outcomes Research with 
+PCSK9 Inhibition in Subjects with Elevated Risk)
+
+**Study design**: Single RCT, double-blind, placebo-controlled, 
+multinational (1242 sites, 49 countries). N = 27,564 (evolocumab arm 
+13,784; placebo arm 13,780). Median follow-up 2.2 years.
+
+**Rows added**: 1
+
+**Why 1 row**: Single RCT, single intervention class, single comparison 
+(evolocumab vs placebo on top of statin). Paper reports benefit 
+consistent across both dosing regimens (140 mg q2wk and 420 mg monthly) 
+and across baseline LDL quartiles — single row sufficient for MVP.
+
+**Population**: Established ASCVD (MI 80.9%, nonhemorrhagic stroke 19.5%, 
+PAD 13.5%; overlap allowed). Age 40-85 (mean 62.5). Required to be on 
+optimized lipid-lowering therapy — preferably high-intensity statin, 
+minimum atorvastatin 20 mg or equivalent, ± ezetimibe. Eligibility: 
+fasting LDL ≥70 mg/dL OR non-HDL ≥100 mg/dL on statin. 69.5% on high-
+intensity statin, 30.2% moderate-intensity, 5.2% on ezetimibe at baseline.
+
+**Intervention**: Evolocumab 140 mg SC every 2 weeks OR 420 mg SC monthly 
+(patient preference). Both regimens captured in single row.
+
+**Key numbers**:
+- `ldl_change_value = -59` (percent): LSM percentage reduction at 48 
+  weeks vs placebo (paper headline figure, 95% CI 58-60).
+- `baseline_ldl_mg_dl = 92`: Median LDL at randomization, on statin, 
+  pre-evolocumab (IQR 80-109). NOT a time-weighted on-treatment value 
+  — this is the pre-randomization median while patients were already 
+  on statin therapy.
+- `ci_low = -60, ci_high = -58`: Paper reports 95% CI for LSM percentage 
+  reduction (different from Cannon 2015, which reports P-value but no 
+  LDL CI).
+- `n = 13784`: Evolocumab arm size.
+
+**Effect timing caveat**: The -59% figure is a 48-week landmark, NOT a 
+time-weighted average. Figure 1 shows LDL reduction peaked at ~61% 
+(weeks 12-24), held ~58-59% through week 72, then mildly attenuated to 
+54% by week 168. Paper text describes the effect as "sustained without 
+evidence of attenuation," but the over-time data in Figure 1 shows 
+modest drift. Modeling implication: this row's effect represents peak-
+to-mid-trial reduction; long-term real-world effect likely 2-4 
+percentage points lower in absolute terms.
+
+**Baseline timing note (cross-row consistency)**: This row's 
+`baseline_ldl_mg_dl = 92` is the randomization baseline (pre-
+intervention, on statin). Cannon 2015's `baseline_ldl_mg_dl = 69.5` is 
+a 1-year on-treatment value (statin-alone group's LDL after a year of 
+simvastatin). Both rows have `on_top_of = ...statin...`, but the 
+baseline semantic differs. See Known Schema Issue #6 (effect/baseline 
+timing).
+
+**CVD outcomes (not in CSV, documented for context)**:
+- Primary composite endpoint (CV death, MI, stroke, unstable angina 
+  hospitalization, coronary revascularization): HR 0.85 (95% CI 0.79-
+  0.92), P<0.001.
+- Key secondary (CV death, MI, stroke): HR 0.80 (95% CI 0.73-0.88), 
+  P<0.001.
+- No effect on cardiovascular mortality (HR 1.05, 95% CI 0.88-1.25) or 
+  all-cause mortality (HR 1.04, 95% CI 0.91-1.19).
+- NNT = 74 over 2.2 years to prevent one CV death, MI, or stroke.
+
+**Safety**: No significant difference in overall adverse events, serious 
+adverse events, new-onset diabetes (HR 1.05, 95% CI 0.94-1.17), 
+neurocognitive events, or muscle-related events. Only nominally 
+significant difference: injection-site reactions (2.1% vs 1.6%, 
+P<0.001), mostly mild, <0.1% discontinuation.
+
+**Access caveats (not in CSV — potential Week 4 schema addition)**: 
+Evolocumab is ~$5,000-7,000/year US, requires prior authorization, and 
+is SC injection. This contrasts with ezetimibe (~$30/month generic, 
+oral). User-facing tool should eventually reflect this access tier 
+difference.
+
+**Funding/COI**: Funded by Amgen (evolocumab manufacturer). Sponsor 
+collaborated on design and held raw database; TIMI Study Group conducted 
+analyses independently.
+
 ---
 
 ## Known Schema Issues (to revisit in Week 4)
 
-**`population` column inconsistency**: Current granularity varies across rows:
+### Issue 1: `population` column inconsistency
+
+Current granularity varies across rows:
 - VOYAGER rows use short labels (e.g., `ASCVD`, `diabetes`)
 - Hasan/Chiavaroli/Brown rows use long composite strings 
   (e.g., `hyperlipidemic_adults_no_DM_no_CVD`)
@@ -367,13 +463,16 @@ incorporated into multiple international guidelines.
 `population_category`, `has_dm`, `has_cvd`, `baseline_bmi`, etc. 
 Decision deferred until all Week 1 papers extracted to see full schema needs.
 
-**`intervention_subtype` semantics**: Currently used for both mechanism 
-classification (e.g., `via_diet_exercise`) and chemical classification 
-(e.g., `soluble_fiber_beta_glucan`). May need to split into two fields, 
-or accept as a flexible sub-classification dimension. Revisit Week 4.
+### Issue 2: `intervention_subtype` semantics
 
-**`n` column semantic inconsistency**: Currently the `n` field contains 
-five different meanings across rows:
+Currently used for both mechanism classification (e.g., `via_diet_exercise`) 
+and chemical classification (e.g., `soluble_fiber_beta_glucan`). May need 
+to split into two fields, or accept as a flexible sub-classification 
+dimension. Revisit Week 4.
+
+### Issue 3: `n` column semantic inconsistency
+
+Currently the `n` field contains five different meanings across rows:
 
 | Paper | Semantic | Example values |
 |-------|----------|----------------|
@@ -382,6 +481,7 @@ five different meanings across rows:
 | Chiavaroli 2018 | subjects in trial sub-analysis | 94, 345 |
 | Brown 1999 | subjects in dose range | 1151, 867, 151, 117 |
 | Ras 2014 | estimated subjects (arms × avg 48) | 1152, 624, 2640, ... |
+| Cannon 2015, Sabatine 2017 | arm size (one trial group) | 9067, 13784 |
 
 Mixing these in one field is risky for Bayesian likelihood weighting 
 (patient exposures ≠ unique subjects ≠ estimated subjects). Week 2 
@@ -396,12 +496,13 @@ sidestepping this issue for MVP.
 Each row populates only the relevant column(s), others NA. This preserves 
 all source information without conflating semantics.
 
-**`ldl_change_unit` heterogeneity (expected, documented)**: Effect sizes 
-are recorded in 4 different units across rows:
+### Issue 4: `ldl_change_unit` heterogeneity (expected, documented)
+
+Effect sizes are recorded in 4 different units across rows:
 
 | Unit | Used by | Meaning |
 |------|---------|---------|
-| `percent` | VOYAGER, Chiavaroli, Ras 2014 | % change in LDL from baseline |
+| `percent` | VOYAGER, Chiavaroli, Ras 2014, Cannon 2015, Sabatine 2017 | % change in LDL from baseline |
 | `mg_dL` | Smart 2024 | Absolute mg/dL change (mean difference) |
 | `mg_dL_per_kg` | Hasan 2020 | mg/dL change per 1 kg weight loss |
 | `mg_dL_per_g` | Brown 1999 | mg/dL change per 1 g soluble fiber |
@@ -421,21 +522,58 @@ effects — it is not a schema bug. Each paper uses its most natural unit.
    final_LDL = baseline × (1 - effect_1_pct) × (1 - effect_2_pct) × ...
 4. `baseline_ldl_mg_dl` column is essential for percent → absolute 
    conversion at prediction time.
-   
-   **Some single RCTs report LDL change without CI**: Papers like Cannon 2015 
-(IMPROVE-IT) report mean LDL change with P-value but no LDL-specific 
-confidence interval. The CIs reported in such papers are typically for 
-clinical endpoint HRs (e.g., for major adverse cardiovascular events), 
-NOT for the LDL change itself. For such rows:
-- `ldl_change_se`, `ci_low`, `ci_high` are all NA
-- Bayesian likelihood in Week 2 must impute uncertainty using one of:
-  - SE imputed from P-value and sample size formulas
-  - Subjective prior reflecting "large trial, narrow uncertainty"
-  - Treat as descriptive only, exclude from likelihood
-- Document choice in modeling code
 
-This is distinct from meta-analyses (Brown, Ras, Chiavaroli, Smart) which 
-typically DO report LDL-specific CIs.
+### Issue 5: Single-RCT CI reporting variability (updated after Sabatine 2017)
+
+Single-RCT papers vary in whether they report a confidence interval on 
+the LDL change itself (separate from clinical endpoint CIs):
+- Cannon 2015 (IMPROVE-IT): Reports P-value for LDL change but NO LDL 
+  CI; only HR CI for clinical endpoints. → `ci_low = NA, ci_high = NA`
+- Sabatine 2017 (FOURIER): Reports both LSM % reduction with 95% CI AND 
+  clinical endpoint HRs with CIs. → `ci_low = -60, ci_high = -58`
+
+Not a universal pattern; depends on reporting choices of individual 
+trials. Week 2 modeling implication: rows with missing LDL CI need SE 
+imputation strategy (from P-value + n, weakly informative prior, or 
+exclusion from likelihood).
+
+This is distinct from meta-analyses (Brown, Ras, Chiavaroli, Smart) 
+which typically DO report LDL-specific CIs.
+
+### Issue 6: Effect/baseline timing inconsistency (NEW — flagged with Sabatine 2017)
+
+The `ldl_change_value` and `baseline_ldl_mg_dl` fields collapse different 
+timing semantics across rows:
+
+`ldl_change_value` timing:
+- VOYAGER: end-of-study mean change (6-week trials)
+- Cannon 2015: time-weighted average over follow-up
+- Sabatine 2017: 48-week landmark (LSM), not time-weighted
+- Smart 2024, Brown, Ras: meta-analytic pooled estimates (study-level effects)
+- Hasan 2020: per-unit (kg weight loss) coefficient
+- Chiavaroli, others: end-of-intervention mean change
+
+`baseline_ldl_mg_dl` timing:
+- Cannon 2015 (69.5): 1-year on-treatment LDL of statin-alone arm
+- Sabatine 2017 (92): randomization baseline on statin, pre-evolocumab
+- VOYAGER: NA (not reported, pooled across baselines)
+- Hasan, Chiavaroli, Brown: trial-level mean baseline
+
+**Modeling implication**: For interventions added on top of statin, the 
+row's "baseline" is ambiguous about whether it represents user's 
+*current on-statin LDL* (Cannon-style) or *LDL before any statin therapy* 
+(not represented in current rows). At prediction time, user input "my 
+current LDL on statin is X" maps differently depending on which row's 
+semantic is used.
+
+**Planned resolution (Week 4)**: Add `effect_timing` and `baseline_timing` 
+fields.
+- `effect_timing`: end_of_study / 48wk_landmark / 1yr_landmark / 
+  time_weighted_avg / meta_pooled / per_unit / NA
+- `baseline_timing`: pre_treatment / on_treatment_steady_state / 
+  randomization_on_statin / NA
+
+---
 
 ## Important Caveats
 

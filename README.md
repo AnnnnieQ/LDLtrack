@@ -2,11 +2,11 @@
 
 > **A Bayesian decision-support tool for personalized LDL-C management** — synthesizing evidence from randomized controlled trials into individualized predictions with explicit uncertainty quantification.
 
-🚧 **Status**: Work in Progress (Week 1 of 4)
+🚧 **Status**: Phase 2 in progress — Bayesian model implementation
 
 🔗 **Live Demo**: *(coming soon)*
-📊 **Methodology**: [docs/methodology.md](docs/methodology.md)
-📝 **Data Sources**: [docs/data_sources.md](docs/data_sources.md)
+📊 **Methodology**: [data/README.md](data/README.md)
+📝 **Data Sources**: [SOURCES.md](SOURCES.md)
 
 ---
 
@@ -25,20 +25,37 @@ LDLtrack addresses these gaps by:
 - ✅ Producing posterior predictive distributions rather than single numbers
 - ✅ Incorporating effect modification by user characteristics where evidence supports it
 
+## Evidence Base
+
+39 effect sizes curated from 8 landmark RCTs and meta-analyses across 7 intervention categories:
+
+| Category | Source | Rows |
+|---|---|---|
+| Statin (4 agents × 5 subgroups) | VOYAGER (Karlson 2015) | 20 |
+| Weight loss (3 mechanisms) | Hasan 2020 | 3 |
+| Portfolio diet (efficacy + effectiveness) | Chiavaroli 2018 | 2 |
+| Soluble fiber (pooled + by type) | Brown 1999 | 4 |
+| Plant sterols (dose-response, 6 bins) | Ras 2014 | 6 |
+| Exercise (aerobic/combined vs resistance) | Smart 2024 | 2 |
+| Ezetimibe added to statin | Cannon 2015 (IMPROVE-IT) | 1 |
+| PCSK9 inhibitor added to statin | Sabatine 2017 (FOURIER) | 1 |
+
+See [data/README.md](data/README.md) for per-paper extraction methodology.
+
 ## Tech Stack
 
-- **Statistical Modeling**: PyMC, ArviZ
-- **Numerics**: NumPy, SciPy, Pandas
-- **Visualization**: Plotly, Matplotlib
-- **Web App**: Streamlit
-- **Deployment**: Streamlit Community Cloud
+PyMC · ArviZ · NumPy · Pandas · Plotly · Streamlit
 
 ## Roadmap
 
-- [x] **Week 1**: Evidence extraction from RCTs and meta-analyses
-- [ ] **Week 2**: Bayesian hierarchical model + Monte Carlo simulation
-- [ ] **Week 3**: Intervention combination logic + Streamlit web app
-- [ ] **Week 4**: Validation, deployment, polishing
+- [x] **Phase 1** — Evidence extraction from RCTs and meta-analyses (8 papers, 39 rows)
+- [ ] **Phase 2** — Bayesian model in PyMC + toy Streamlit demo
+    - [ ] Milestone 2.1: PyMC + Bayesian basics
+    - [ ] Milestone 2.2: Single-intervention LDLtrack model
+    - [ ] Milestone 2.3: Multi-intervention combination + Streamlit demo
+- [ ] **Phase 3** — Schema v2 refactor, CVD risk reduction, full UI polish, deployment
+
+Detailed feature plans in [docs/feature_roadmap.md](docs/feature_roadmap.md).
 
 ## ⚠️ Disclaimer
 

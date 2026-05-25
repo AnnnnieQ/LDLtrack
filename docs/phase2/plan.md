@@ -82,7 +82,7 @@ long videos or long docs). Most time spent writing and running code.
       + grid approximation by hand (coin flip: 7/10 heads, estimate p).
       Covered prior/likelihood/posterior intuition + prior-strength
       experiment. Notebook in notebooks/scratch/ (gitignored).
-- [ ] **Day 2** — Redo the coin flip in PyMC; understand how MCMC
+- [x] **Day 2** — Redo the coin flip in PyMC; understand how MCMC
       sampling replaces grid approximation. Basic PyMC syntax
       (pm.Model, prior, likelihood, pm.sample). Read trace plots.
 - [ ] **Day 3** — PyMC linear regression (follow official tutorial,
@@ -194,7 +194,7 @@ pre-computed posterior loaded at startup.
 
 ## Current Status
 
-Phase 2 / Milestone 2.1 / Day 2. Day 1 complete (see Milestone 2.1
-checklist above). Next task: redo the coin flip example in PyMC.
+Phase 2 / Milestone 2.1 / Day 3. Days 1-2 complete (see Milestone 2.1
+checklist above). Next task: PyMC linear regression (official tutorial).
 
 Update the Day checkboxes above as progress is made.

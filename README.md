@@ -27,7 +27,7 @@ LDLtrack addresses these gaps by:
 
 ## Evidence Base
 
-39 effect sizes curated from 8 landmark RCTs and meta-analyses across 7 intervention categories:
+39 effect sizes curated from 8 landmark RCTs and meta-analyses across 8 intervention categories:
 
 | Category | Source | Rows |
 |---|---|---|

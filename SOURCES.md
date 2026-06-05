@@ -136,7 +136,33 @@ moderate-to-low quality (TESTEX <10); 78% had medication confound; high
 heterogeneity (I² > 75%); prediction interval crosses zero (27.9% of 
 studies showed no LDL benefit).
 
-- **Sabatine 2017 (FOURIER)**: Sabatine MS et al. Evolocumab and Clinical Outcomes in 
-  Patients with Cardiovascular Disease. *N Engl J Med* 2017;376:1713-22. PMID: 28304224.
-  Single RCT, N=27,564 ASCVD patients on statin, evolocumab vs placebo. -59% LDL at 
-  48wk; CV event HR 0.85.
+## 7. Sabatine MS, Giugliano RP, Keech AC, et al. (2017)
+
+**Title**: Evolocumab and Clinical Outcomes in Patients with Cardiovascular Disease
+
+- Journal: *N Engl J Med* 2017;376:1713-22
+- PMID: 28304224
+- Study type: Single RCT (FOURIER), 27,564 ASCVD patients on statin background,
+  evolocumab vs placebo, median 2.2-year follow-up
+- Data extracted: LDL reduction (-59% at 48 weeks); primary CV endpoint HR 0.85
+- Coverage in dataset: Evolocumab (PCSK9 inhibitor) on-top-of statin
+- Rows in dataset: 1 — `SABATINE_2017_evolocumab`
+- Verification status: LDL change and HR verified against paper abstract
+
+## 8. Cannon CP, Blazing MA, Giugliano RP, et al. (2015)
+
+**Title**: Ezetimibe Added to Statin Therapy after Acute Coronary Syndromes
+
+- Journal: *N Engl J Med* 2015;372:2387-97
+- PMID: 26039521
+- Study type: Single RCT (IMPROVE-IT), 18,144 post-ACS patients,
+  ezetimibe 10mg + simvastatin 40mg vs simvastatin 40mg alone, 6-year follow-up
+- Population: Secondary prevention, LDL 50–125 mg/dL at entry
+- Data extracted: LDL reduction on ezetimibe arm (-24% vs simvastatin alone);
+  absolute reduction 15.8 mg/dL (time-weighted average) or 16.7 mg/dL at 1yr;
+  primary CV endpoint HR 0.936 (95% CI 0.89–0.99)
+- Coverage in dataset: Ezetimibe added to moderate-intensity statin
+- Rows in dataset: 1 — `CANNON_2015_ezetimibe`
+- Verification status: LDL % change verified; no CI reported for LDL change in paper
+  (ldl_change_se = NaN in CSV). Baseline LDL 69.5 mg/dL is 1-year on-treatment
+  value, not randomization baseline (see Known Schema Issue #6 in data/README.md).

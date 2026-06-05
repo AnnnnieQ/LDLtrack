@@ -2,7 +2,7 @@
 
 Curated effect sizes from published RCTs and meta-analyses for the LDLtrack project.
 
-## Schema (v2)
+## Schema (v1)
 
 This CSV uses a 21-column schema designed to handle heterogeneous intervention types
 (pharmacological, lifestyle, combination). Each row represents one effect size estimate
@@ -69,7 +69,7 @@ Linear regression on type and dose of soluble fiber.
 - Abstract claims "no significant difference between oat, psyllium, pectin"
   (statistical claim: CIs overlap)
 - Point estimates differ: oat -1.43, psyllium -2.59, pectin -2.13 mg/dL/g
-- Both pooled and by-type rows preserved for modeling flexibility in Week 2
+- Both pooled and by-type rows preserved for modeling flexibility in Milestone 2.2
 - Guar gum excluded: paper reports insufficient data in practical dose range
 
 **Dose range decision**: Used **practical range (≤8 g/d for LDL)** data only,
@@ -125,7 +125,7 @@ model weighted by inverse variance.
 - Paper's core contribution is the dose-response curve, not a single 
   pooled effect estimate
 - Each dose bin provides an independent effect + CI, supporting Bayesian 
-  dose-response modeling in Week 2
+  dose-response modeling in Milestone 2.2
 - 6 rows mirror the paper's Table 1 structure exactly
 
 **Why combined (sterols + stanols pooled), not separated**:
@@ -435,7 +435,7 @@ neurocognitive events, or muscle-related events. Only nominally
 significant difference: injection-site reactions (2.1% vs 1.6%, 
 P<0.001), mostly mild, <0.1% discontinuation.
 
-**Access caveats (not in CSV — potential Week 4 schema addition)**: 
+**Access caveats (not in CSV — potential Phase 3 schema addition)**: 
 Evolocumab is ~$5,000-7,000/year US, requires prior authorization, and 
 is SC injection. This contrasts with ezetimibe (~$30/month generic, 
 oral). User-facing tool should eventually reflect this access tier 
@@ -447,7 +447,7 @@ analyses independently.
 
 ---
 
-## Known Schema Issues (to revisit in Week 4)
+## Known Schema Issues (to revisit in Phase 3)
 
 ### Issue 1: `population` column inconsistency
 
@@ -459,16 +459,16 @@ Current granularity varies across rows:
   comorbidities + baseline values), violating one-fact-per-column principle
 - Some information is redundant with `baseline_ldl_mg_dl` column
 
-**Planned resolution (Week 4)**: Split `population` into orthogonal columns:
+**Planned resolution (Phase 3)**: Split `population` into orthogonal columns:
 `population_category`, `has_dm`, `has_cvd`, `baseline_bmi`, etc. 
-Decision deferred until all Week 1 papers extracted to see full schema needs.
+Decision deferred until all Phase 1 papers extracted to see full schema needs.
 
 ### Issue 2: `intervention_subtype` semantics
 
 Currently used for both mechanism classification (e.g., `via_diet_exercise`) 
 and chemical classification (e.g., `soluble_fiber_beta_glucan`). May need 
 to split into two fields, or accept as a flexible sub-classification 
-dimension. Revisit Week 4.
+dimension. Revisit Phase 3.
 
 ### Issue 3: `n` column semantic inconsistency
 
@@ -484,11 +484,11 @@ Currently the `n` field contains five different meanings across rows:
 | Cannon 2015, Sabatine 2017 | arm size (one trial group) | 9067, 13784 |
 
 Mixing these in one field is risky for Bayesian likelihood weighting 
-(patient exposures ≠ unique subjects ≠ estimated subjects). Week 2 
+(patient exposures ≠ unique subjects ≠ estimated subjects). Milestone 2.2
 modeling will use SE/CI for likelihood rather than n directly, 
 sidestepping this issue for MVP.
 
-**Planned resolution (Week 4)**: Split `n` into three orthogonal columns:
+**Planned resolution (Phase 3)**: Split `n` into three orthogonal columns:
 - `n_subjects` — unique participant count (single RCTs, meta-analysis subsets)
 - `n_arms` or `n_strata` — study arms in meta-analyses
 - `n_exposures` — IPD-level exposures (VOYAGER-style data)
@@ -510,7 +510,7 @@ Effect sizes are recorded in 4 different units across rows:
 This heterogeneity reflects real differences in how source papers report 
 effects — it is not a schema bug. Each paper uses its most natural unit.
 
-**Week 2 modeling implications**:
+**Milestone 2.2 modeling implications**:
 1. Bayesian likelihood must be unit-aware. Rows with different units 
    should NOT be pooled in the same likelihood term.
 2. User-facing output should convert all effects to a single unit 
@@ -533,7 +533,7 @@ the LDL change itself (separate from clinical endpoint CIs):
   clinical endpoint HRs with CIs. → `ci_low = -60, ci_high = -58`
 
 Not a universal pattern; depends on reporting choices of individual 
-trials. Week 2 modeling implication: rows with missing LDL CI need SE 
+trials. Milestone 2.2 modeling implication: rows with missing LDL CI need SE 
 imputation strategy (from P-value + n, weakly informative prior, or 
 exclusion from likelihood).
 
@@ -566,7 +566,7 @@ row's "baseline" is ambiguous about whether it represents user's
 current LDL on statin is X" maps differently depending on which row's 
 semantic is used.
 
-**Planned resolution (Week 4)**: Add `effect_timing` and `baseline_timing` 
+**Planned resolution (Phase 3)**: Add `effect_timing` and `baseline_timing` 
 fields.
 - `effect_timing`: end_of_study / 48wk_landmark / 1yr_landmark / 
   time_weighted_avg / meta_pooled / per_unit / NA
@@ -616,7 +616,7 @@ endpoint effects (for pharmacologic interventions). The `notes` column documents
 time-course information where known.
 
 **MVP approach**: Use trial endpoint / 12-month values as default predictions.
-**V2 expansion (Week 4-5)**: Add time horizon selector and progressive effect curves.
+**Phase 3 expansion**: Add time horizon selector and progressive effect curves.
 
 ### Statistical Heterogeneity (I²)
 Hasan 2020 reports very high I² (>80%) for LDL effects, indicating substantial 

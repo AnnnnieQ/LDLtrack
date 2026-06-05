@@ -85,14 +85,14 @@ long videos or long docs). Most time spent writing and running code.
 - [x] **Day 2** — Redo the coin flip in PyMC; understand how MCMC
       sampling replaces grid approximation. Basic PyMC syntax
       (pm.Model, prior, likelihood, pm.sample). Read trace plots.
-- [ ] **Day 3** — PyMC linear regression (follow official tutorial,
+- [x] **Day 3** — PyMC linear regression (follow official tutorial,
       modify fake data, rerun).
-- [ ] **Day 4** — PyMC Bayesian meta-analysis / hierarchical partial
+- [x] **Day 4** — PyMC Bayesian meta-analysis / hierarchical partial
       pooling example (closest to LDLtrack's use case).
-- [ ] **Day 5** — Toy model on a real LDLtrack data subset (e.g., the
+- [x] **Day 5** — Toy model on a real LDLtrack data subset (e.g., the
       4 VOYAGER all_patients rows: a mini random-effects meta-analysis).
-- [ ] **Day 6** — Debug + improve toy model + ArviZ visualization.
-- [ ] **Day 7** — Cleanup + milestone commit.
+- [x] **Day 6** — Debug + improve toy model + ArviZ visualization.
+- [x] **Day 7** — Cleanup + milestone commit.
 
 Milestone 2.1 exit criteria: can write a simple PyMC model unaided,
 run sampling, read a trace plot to judge convergence (R-hat < 1.01),
@@ -194,7 +194,8 @@ pre-computed posterior loaded at startup.
 
 ## Current Status
 
-Phase 2 / Milestone 2.1 / Day 3. Days 1-2 complete (see Milestone 2.1
-checklist above). Next task: PyMC linear regression (official tutorial).
-
-Update the Day checkboxes above as progress is made.
+  Milestone 2.1 complete. All 7 days done. Key lessons: non-centered
+  parameterization eliminates Neal's Funnel; shrinkage magnitude depends on
+  SE relative to spread; az.plot_posterior / plot_pair / plot_rank / PPC
+  are the standard ArviZ diagnostic toolkit.
+  Next: Milestone 2.2 — single-intervention LDLtrack model on real CSV.

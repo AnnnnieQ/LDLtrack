@@ -5,60 +5,60 @@ import pymc as pm
 def build_model(data: dict,
                 alpha_mu: float,
                 alpha_sd: float,
-                hierarchical: bool = False) -> pm.Model:
-    """Bayesian dose-response model for a single intervention.
+                mode: str = 'dose_response') -> pm.Model:
+    """Bayesian LDL reduction model for a single intervention.
 
     Parameters
     ----------
     data : dict
-        Output of data_loader.load_intervention().
+        Output of data_loader.load_intervention() or load_single_row().
     alpha_mu : float
-        Prior mean for alpha (pooled effect at mean dose, %).
+        Prior mean for alpha (effect at mean dose for dose_response;
+        effect estimate for intercept_only), in %.
     alpha_sd : float
         Prior SD for alpha. Use ~3x the paper-reported CI half-width.
-    hierarchical : bool
-        False (default): pure dose-response regression.
-          Use when all rows come from one paper (e.g. plant sterols).
-        True: adds tau + theta_offset random effects.
-          Use when rows come from multiple independent studies.
+    mode : str
+        'dose_response'  — alpha + beta * dose_c. Use when rows span a
+                           continuous dose range from one paper (e.g. plant
+                           sterols). No tau — avoids tau->0 boundary issues.
+        'intercept_only' — alpha only. Use when the user selects a single
+                           row (e.g. statin: one drug/dose; exercise: one
+                           modality). Posterior ≈ Normal(y_obs, se).
+        'hierarchical'   — alpha + beta * dose_c + tau * theta_offset.
+                           Use when rows come from multiple independent
+                           studies. Not used in Milestone 2.3.
 
     Note: dose_query and baseline_ldl are NOT model parameters.
-    Call predict() after sampling to get predictions at any dose/baseline
+    Call predict() after sampling to get predictions at any input
     without re-running MCMC.
-
-    Model structure (hierarchical=False)
-    -------------------------------------
-    alpha ~ Normal(alpha_mu, alpha_sd)
-    beta  ~ Normal(0, 2)
-    theta_i = alpha + beta * dose_c_i
-    y_i ~ Normal(theta_i, se_i)
-
-    Model structure (hierarchical=True)
-    -------------------------------------
-    Same as above, plus:
-    tau          ~ HalfNormal(5)
-    theta_offset ~ Normal(0, 1, shape=n_studies)   # non-centered
-    theta_i       = alpha + beta * dose_c_i + tau * theta_offset_i
     """
     y_obs     = data["y_obs"]
     se        = data["se"]
-    dose_c    = data["dose_c"]
     n_studies = data["n_studies"]
 
     with pm.Model() as model:
         alpha = pm.Normal("alpha", mu=alpha_mu, sigma=alpha_sd)
-        beta  = pm.Normal("beta",  mu=0, sigma=2)
 
-        if hierarchical:
-            tau = pm.HalfNormal("tau", sigma=5)
+        if mode == 'dose_response':
+            dose_c = data["dose_c"]
+            beta   = pm.Normal("beta", mu=0, sigma=2)
+            theta  = pm.Deterministic("theta", alpha + beta * dose_c)
+
+        elif mode == 'intercept_only':
+            theta = pm.Deterministic("theta", alpha * np.ones(n_studies))
+
+        elif mode == 'hierarchical':
+            dose_c       = data["dose_c"]
+            beta         = pm.Normal("beta", mu=0, sigma=2)
+            tau          = pm.HalfNormal("tau", sigma=5)
             theta_offset = pm.Normal("theta_offset", mu=0, sigma=1, shape=n_studies)
-            theta = pm.Deterministic(
+            theta        = pm.Deterministic(
                 "theta", alpha + beta * dose_c + tau * theta_offset
             )
+
         else:
-            theta = pm.Deterministic(
-                "theta", alpha + beta * dose_c
-            )
+            raise ValueError(f"Unknown mode {mode!r}. "
+                             "Choose 'dose_response', 'intercept_only', or 'hierarchical'.")
 
         pm.Normal("obs", mu=theta, sigma=se, observed=y_obs)
 
@@ -84,12 +84,15 @@ def sample_model(model: pm.Model,
     return idata
 
 
-def predict(idata, data: dict, dose_query: float, baseline_ldl: float) -> dict:
+def predict(idata,
+            data: dict,
+            baseline_ldl: float,
+            dose_query: float = None) -> dict:
     """Compute predictions from posterior samples (no re-sampling needed).
 
-    Works for any dose_query / baseline_ldl without rebuilding the model.
-    If tau is present in idata (hierarchical=True), samples a new individual's
-    offset to include between-study heterogeneity in the interval.
+    Works for any baseline_ldl without rebuilding the model. For
+    dose_response mode, also accepts dose_query to evaluate the curve at
+    a specific dose. For intercept_only mode, dose_query is unused.
 
     Parameters
     ----------
@@ -97,10 +100,11 @@ def predict(idata, data: dict, dose_query: float, baseline_ldl: float) -> dict:
         Output of sample_model().
     data : dict
         Same data dict passed to build_model() — needed for mean_dose.
-    dose_query : float
-        Dose in original units (uncentered).
     baseline_ldl : float
         User's baseline LDL in mg/dL.
+    dose_query : float or None
+        Dose in original units (uncentered). Required for dose_response
+        mode; ignored for intercept_only.
 
     Returns
     -------
@@ -109,18 +113,75 @@ def predict(idata, data: dict, dose_query: float, baseline_ldl: float) -> dict:
       'ldl_final'  : predicted final LDL in mg/dL, shape (n_samples,)
     """
     alpha_s = idata.posterior["alpha"].values.flatten()
-    beta_s  = idata.posterior["beta"].values.flatten()
 
-    dose_query_c = dose_query - data["mean_dose"]
-
-    if "tau" in idata.posterior:
-        tau_s = idata.posterior["tau"].values.flatten()
-        rng = np.random.default_rng(seed=0)
-        offset_new = rng.normal(0, 1, len(alpha_s))
-        theta_new_s = alpha_s + beta_s * dose_query_c + tau_s * offset_new
-    else:
+    if "beta" in idata.posterior:
+        # dose_response or hierarchical mode
+        beta_s = idata.posterior["beta"].values.flatten()
+        dose_query_c = dose_query - data["mean_dose"]
         theta_new_s = alpha_s + beta_s * dose_query_c
+
+        if "tau" in idata.posterior:
+            tau_s = idata.posterior["tau"].values.flatten()
+            rng = np.random.default_rng(seed=0)
+            offset_new = rng.normal(0, 1, len(alpha_s))
+            theta_new_s = theta_new_s + tau_s * offset_new
+    else:
+        # intercept_only mode — dose_query is irrelevant
+        theta_new_s = alpha_s
+
+    # Unit conversion: if raw model output is in mg_dL, convert to % now
+    # so that combine() and ldl_final both operate on a consistent % scale.
+    # exercise_pct = -7.22 / baseline_ldl * 100  (user baseline as denominator)
+    unit = data.get("unit", "percent")
+    if unit == "mg_dL":
+        theta_new_s = theta_new_s / baseline_ldl * 100
 
     ldl_final_s = baseline_ldl * (1 + theta_new_s / 100)
 
     return {"theta_new": theta_new_s, "ldl_final": ldl_final_s}
+
+
+def combine(baseline_ldl: float, predictions: list) -> dict:
+    """Combine multiple intervention predictions multiplicatively.
+
+    Each intervention's % effect is applied in sequence to the running LDL:
+      final = baseline × Π(1 + theta_i / 100)
+
+    Multiplication is commutative so order doesn't affect the result.
+    Note: for interventions with absolute effects converted to % using
+    user baseline (e.g. exercise), the % will vary by individual and the
+    absolute reduction implied may differ from the paper-reported value
+    when applied after other interventions — this is a known approximation.
+
+    Parameters
+    ----------
+    baseline_ldl : float
+        User's baseline LDL in mg/dL.
+    predictions : list of dict
+        Each dict is a predict() output with key 'theta_new' (% samples).
+        All dicts must have the same number of samples.
+
+    Returns
+    -------
+    dict with keys:
+      'ldl_final'     : combined predicted LDL in mg/dL, shape (n_samples,)
+      'total_effect'  : total % reduction, shape (n_samples,)
+    """
+    n = len(predictions[0]["theta_new"])
+    for pred in predictions:
+        if len(pred["theta_new"]) != n:
+            raise ValueError(
+                f"All predictions must have the same number of samples. "
+                f"Got {len(pred['theta_new'])} vs {n}."
+            )
+
+    rng = np.random.default_rng(seed=0)
+    ldl = np.full(n, float(baseline_ldl))
+    for pred in predictions:
+        theta = pred["theta_new"].copy()
+        rng.shuffle(theta)  # break chain-block alignment; interventions are independent
+        ldl = ldl * (1 + theta / 100)
+
+    total_effect = (ldl - baseline_ldl) / baseline_ldl * 100
+
+    return {"ldl_final": ldl, "total_effect": total_effect}

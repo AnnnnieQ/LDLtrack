@@ -33,7 +33,7 @@ should finish by ~mid-June 2026, leaving Phase 3 polish through summer.
   - 8 papers, 39 effect-size rows, 21-column schema
   - 6 Known Schema Issues documented in data/README.md for Phase 3
 
-- **Phase 2 — Bayesian model** ⏳ IN PROGRESS
+- **Phase 2 — Bayesian model** ✅ COMPLETE
   - Goal: working PyMC model + toy Streamlit demo
   - 3 milestones (below)
   - Realistic estimate: ~3 weeks
@@ -98,7 +98,7 @@ Milestone 2.1 exit criteria: can write a simple PyMC model unaided,
 run sampling, read a trace plot to judge convergence (R-hat < 1.01),
 and understand the hierarchical structure of a Bayesian meta-analysis.
 
-### Milestone 2.2 — Single-intervention LDLtrack model (~7-10 days)
+### Milestone 2.2 — Single-intervention LDLtrack model (~7-10 days) ✅ COMPLETE
 
 Goal: PyMC model that ingests the LDLtrack CSV and, for a single
 intervention, outputs posterior + predicted final LDL + 95% CrI,
@@ -107,7 +107,7 @@ roughly consistent with paper-reported effects.
 Includes: model design doc (docs/model_design_v1.md), src/data_loader.py,
 src/model_v1.py, a validation notebook, ArviZ posterior visualization.
 
-### Milestone 2.3 — Combination + Streamlit demo (~7 days)
+### Milestone 2.3 — Combination + Streamlit demo (~7 days) ✅ COMPLETE
 
 Goal: a localhost-runnable Streamlit app where a user inputs baseline
 LDL + selects 2-3 interventions and sees predicted final LDL + chart.
@@ -115,24 +115,29 @@ LDL + selects 2-3 interventions and sees predicted final LDL + chart.
 Includes: multiplicative combination on % scale, basic Streamlit UI,
 pre-computed posterior loaded at startup.
 
+Delivered: app.py (statin × 4 + plant sterols dose-response + exercise);
+combine() with independent shuffle; build_model mode flag; load_single_row;
+mg_dL → % unit conversion in predict(); edge-case validated.
+
 ---
 
-## Key Design Questions for Milestone 2.2 (decide later, noted now)
+## Key Design Questions for Milestone 2.2 (resolved in 2.2/2.3)
 
-1. **Unit handling**: CSV has 4 ldl_change_unit values (percent, mg_dL,
-   mg_dL_per_kg, mg_dL_per_g). Plan: convert all to % at the likelihood
-   layer using user baseline as conversion factor.
-2. **Combination**: multiplicative on % scale —
-   final = baseline * prod(1 - effect_i). on_top_of constraints must be
-   satisfied before a row's effect can be applied (e.g., ezetimibe
-   requires a statin background).
-3. **Priors**: use paper-reported point estimates as informed priors,
-   but with prior SD deliberately 2-3x wider than the paper CI so data
-   dominates.
-4. **Missing SE rows**: Cannon 2015 and the Smart 2024 RT-null row have
-   no CI — need imputation strategy or wider prior.
-5. **Output**: posterior on effect size + predicted final LDL with 95%
-   credible interval (not confidence interval).
+1. **Unit handling** — Resolved: mg/dL→% conversion done in predict() at
+   inference time using user baseline as the denominator; applied only to
+   the exercise row (Smart 2024 reports in mg/dL). mg_dL_per_kg and
+   mg_dL_per_g units are not yet handled — rows using those units are
+   excluded from the Phase 2 MVP and deferred to Phase 3 schema v2.
+2. **Combination** — Resolved: multiplicative on % scale via combine() with
+   per-sample shuffle for independence. on_top_of constraints NOT implemented
+   in the 3-intervention MVP (statin, plant sterols, exercise have no
+   mutual dependencies); deferred to Phase 3.
+3. **Priors** — Resolved: alpha_mu from paper point estimates; alpha_sd set
+   to ~3× CI half-width so the single-row likelihood dominates.
+4. **Missing SE rows** — Resolved: Cannon 2015 and Smart 2024 RT-null row
+   excluded (no SE); both deferred to Phase 3.
+5. **Output** — Resolved: predict() returns posterior theta_new (% change)
+   and ldl_final (mg/dL); 95% CrI displayed in Streamlit app.
 
 ---
 
@@ -192,10 +197,23 @@ pre-computed posterior loaded at startup.
 
 ---
 
+## Known Limitations (deferred to Phase 3)
+
+- **Exercise dose-response**: Smart 2024's LDL meta-regression included no
+  exercise-dose predictor (only age and study size), so the exercise effect
+  is not stratified by frequency or intensity. Phase 3 should seek a
+  dose-stratified LDL meta-analysis.
+- **Biological floor**: The multiplicative combination applies no biological
+  floor. At low baseline LDL with multiple strong interventions, the model
+  can predict <~25 mg/dL — a clinically implausible level. Phase 3 should
+  add a soft floor (e.g., logistic saturation or a 25 mg/dL lower bound).
+
+---
+
 ## Current Status
 
-  Milestone 2.1 complete. All 7 days done. Key lessons: non-centered
-  parameterization eliminates Neal's Funnel; shrinkage magnitude depends on
-  SE relative to spread; az.plot_posterior / plot_pair / plot_rank / PPC
-  are the standard ArviZ diagnostic toolkit.
-  Next: Milestone 2.2 — single-intervention LDLtrack model on real CSV.
+  Phase 2 complete. Milestones 2.1, 2.2, 2.3 all done.
+  Deliverables: PyMC Bayesian models (intercept_only + dose_response modes),
+  data_loader, predict(), combine(), milestone22/23 validation notebooks,
+  and localhost Streamlit demo (app.py).
+  Next: Phase 3 — schema v2 refactor, CVD risk calculation, UI polish, deployment.

@@ -166,3 +166,28 @@ studies showed no LDL benefit).
 - Verification status: LDL % change verified; no CI reported for LDL change in paper
   (ldl_change_se = NaN in CSV). Baseline LDL 69.5 mg/dL is 1-year on-treatment
   value, not randomization baseline (see Known Schema Issue #6 in data/README.md).
+  
+  
+## 9. Cholesterol Treatment Trialists' (CTT) Collaboration (2010)
+
+**Title**: Efficacy and safety of more intensive lowering of LDL cholesterol:
+a meta-analysis of data from 170,000 participants in 26 randomised trials
+
+- Journal: *Lancet* 2010;376:1670-1681
+- PMID: 21067804
+- Study type: Meta-analysis of individual participant data, 26 statin RCTs
+  (170,000 participants); 21 statin-vs-control + 5 more-vs-less-intensive
+- Population: Broad statin trial population (primary + secondary prevention)
+- Data extracted: RR for major vascular events per 1.0 mmol/L LDL-C reduction
+  = 0.78 (95% CI 0.76-0.80, p<0.0001), all 26 trials combined
+- Coverage in dataset: NOT an intervention row. Used in src/cvd_risk.py to
+  convert predicted LDL reduction into relative CV risk reduction, applied
+  multiplicatively as RR = 0.78^(delta_mmol). Paper confirms the multiplicative
+  form (0.78 x 0.78 ~ 0.6 for a 2 mmol/L reduction).
+- Conversion factor: 1 mmol/L = 38.67 mg/dL
+- Used via: also cited in Mach 2020 ESC/EAS dyslipidaemia guidelines.
+- Verification status: point estimate and CI verified against primary source
+  (Lancet 2010 abstract + Discussion). CAVEAT: all 26 trials are statin trials;
+  applying this RR to non-statin LDL reductions (plant sterols, exercise)
+  assumes mechanism-independent benefit per mmol/L — a documented assumption,
+  flagged in the app's mechanism-equivalence caveat.

@@ -1,4 +1,4 @@
-"""Tests for src/cvd_risk.cvd_rrr (fixed and sampled CTT effect size)."""
+"""Tests for src/cvd_risk: cvd_rrr (fixed/sampled CTT effect) and cvd_arr."""
 
 import sys
 from pathlib import Path
@@ -7,7 +7,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.cvd_risk import cvd_rrr, MG_DL_PER_MMOL, RR_PER_MMOL
+from src.cvd_risk import cvd_rrr, cvd_arr, MG_DL_PER_MMOL, RR_PER_MMOL
 
 
 def _synthetic_ldl_posterior(n=8000, baseline=150.0, mean_final=90.0, sd=8.0, seed=1):
@@ -107,6 +107,30 @@ def test_scalar_sample_effect_requires_n_samples():
     # With n_samples it works and returns that many draws.
     out = cvd_rrr(150.0, 90.0, sample_effect=True, n_samples=4000, random_seed=0)
     assert out["rrr"].shape == (4000,)
+
+
+def test_arr_identity():
+    """ARR = baseline_risk * RRR, and final_risk = baseline - ARR."""
+    out = cvd_arr(0.40, 20.0)
+    assert np.isclose(out["arr"], 8.0)
+    assert np.isclose(out["final_risk"], 12.0)
+
+
+def test_arr_array_input_preserves_shape():
+    """Array RRR maps elementwise; output shapes match the input."""
+    rrr = np.array([0.0, 0.25, 0.50])
+    out = cvd_arr(rrr, 20.0)
+    assert out["arr"].shape == rrr.shape
+    assert out["final_risk"].shape == rrr.shape
+    assert np.allclose(out["arr"], [0.0, 5.0, 10.0])
+    assert np.allclose(out["final_risk"], [20.0, 15.0, 10.0])
+
+
+def test_arr_zero_rrr_gives_zero_arr():
+    """Zero RRR -> zero ARR, final risk unchanged from baseline."""
+    out = cvd_arr(0.0, 20.0)
+    assert np.isclose(out["arr"], 0.0)
+    assert np.isclose(out["final_risk"], 20.0)
 
 
 if __name__ == "__main__":

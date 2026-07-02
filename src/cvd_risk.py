@@ -92,3 +92,33 @@ def cvd_rrr(baseline_ldl, ldl_final, rr_per_mmol=RR_PER_MMOL,
     rrr = 1.0 - rr
 
     return {"rr": rr, "rrr": rrr}
+
+
+def cvd_arr(rrr, baseline_risk_pct):
+    """Absolute cardiovascular risk reduction from a relative risk reduction.
+
+    RRR alone is a multiplier; it does not say how many percentage points of
+    risk are actually avoided. That depends on the user's absolute baseline
+    risk: a 40% RRR removes 8 points from a 20% baseline but only 2 from a 5%
+    baseline. This converts RRR to an absolute reduction (ARR) and the residual
+    final risk, per sample so the RRR posterior propagates through.
+
+    Parameters
+    ----------
+    rrr : float or np.ndarray
+        Relative risk reduction (e.g. the 'rrr' array from cvd_rrr).
+    baseline_risk_pct : float
+        User's 10-year CVD risk in % (0-100), from a doctor or an external
+        calculator (PCE / SCORE2). A single scalar applied to every sample.
+
+    Returns
+    -------
+    dict with keys:
+      'arr'        : absolute risk reduction in percentage points,
+                     = baseline_risk_pct * rrr, same shape as rrr.
+      'final_risk' : residual 10-year risk in %, = baseline_risk_pct - arr.
+    """
+    rrr = np.asarray(rrr, dtype=float)
+    arr = baseline_risk_pct * rrr
+    final_risk = baseline_risk_pct - arr
+    return {"arr": arr, "final_risk": final_risk}

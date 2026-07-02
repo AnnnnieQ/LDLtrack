@@ -5,52 +5,26 @@ sys.path.insert(0, str(Path(__file__).parent))
 import numpy as np
 import streamlit as st
 
-from src.data_loader import load_intervention, load_single_row
-from src.model_v1 import build_model, sample_model, predict, combine
+from src.app_models import STATIN_OPTIONS, load_saved_models
+from src.model_v1 import predict, combine
 from src.cvd_risk import cvd_rrr, cvd_arr
 
 # ---------------------------------------------------------------------------
-# Constants
+# Model cache
 # ---------------------------------------------------------------------------
 
-STATIN_OPTIONS = {
-    "Atorvastatin 40 mg":  {"intervention_specific": "atorvastatin", "dose_value": 40},
-    "Atorvastatin 80 mg":  {"intervention_specific": "atorvastatin", "dose_value": 80},
-    "Rosuvastatin 20 mg":  {"intervention_specific": "rosuvastatin", "dose_value": 20},
-    "Rosuvastatin 40 mg":  {"intervention_specific": "rosuvastatin", "dose_value": 40},
-}
-
-# ---------------------------------------------------------------------------
-# Model cache (MCMC runs once at startup)
-# ---------------------------------------------------------------------------
-
-@st.cache_resource(show_spinner="Running MCMC — one-time setup, ~30 seconds...")
+@st.cache_resource(show_spinner="Loading pre-sampled posteriors...")
 def load_all_models():
-    """Pre-sample all intervention models. Cached across reruns."""
-    models = {}
-
-    # Statin: prior centered at -50% (published high-intensity statin literature range),
-    # independent of the specific row's observed value. alpha_sd=5 is wide enough
-    # that the single-row likelihood dominates (posterior ≈ Normal(y_obs, se)).
-    statin_seeds = [1, 2, 3, 4]
-    for (label, filters), seed in zip(STATIN_OPTIONS.items(), statin_seeds):
-        data = load_single_row("statin", {**filters, "population": "all_patients"})
-        model = build_model(data, alpha_mu=-50, alpha_sd=5, mode="intercept_only")
-        idata = sample_model(model, random_seed=seed, draws=2000)
-        models[label] = {"idata": idata, "data": data}
-
-    data_sterols = load_intervention("plant_sterols")
-    model_sterols = build_model(data_sterols, alpha_mu=-8.0, alpha_sd=2.5, mode="dose_response")
-    idata_sterols = sample_model(model_sterols, random_seed=5, draws=2000)
-    models["plant_sterols"] = {"idata": idata_sterols, "data": data_sterols}
-
-    data_ex = load_single_row("exercise",
-                              {"intervention_subtype": "aerobic_or_combined_AT_CT"})
-    model_ex = build_model(data_ex, alpha_mu=-7.22, alpha_sd=2, mode="intercept_only")
-    idata_ex = sample_model(model_ex, random_seed=6, draws=2000)
-    models["exercise"] = {"idata": idata_ex, "data": data_ex}
-
-    return models
+    """Load app models from pre-sampled posterior files."""
+    try:
+        return load_saved_models()
+    except FileNotFoundError as err:
+        st.error(
+            "Pre-sampled posterior files were not found. "
+            "Run `python scripts/precompute_posteriors.py` before launching or deploying the app."
+        )
+        st.caption(str(err))
+        st.stop()
 
 # ---------------------------------------------------------------------------
 # App

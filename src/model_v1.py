@@ -1,11 +1,14 @@
 import numpy as np
-import pymc as pm
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pymc as pm
 
 
 def build_model(data: dict,
                 alpha_mu: float,
                 alpha_sd: float,
-                mode: str = 'dose_response') -> pm.Model:
+                mode: str = 'dose_response') -> "pm.Model":
     """Bayesian LDL reduction model for a single intervention.
 
     Parameters
@@ -36,6 +39,8 @@ def build_model(data: dict,
     se        = data["se"]
     n_studies = data["n_studies"]
 
+    import pymc as pm
+
     with pm.Model() as model:
         alpha = pm.Normal("alpha", mu=alpha_mu, sigma=alpha_sd)
 
@@ -65,13 +70,15 @@ def build_model(data: dict,
     return model
 
 
-def sample_model(model: pm.Model,
+def sample_model(model: "pm.Model",
                  draws: int = 2000,
                  tune: int = 1000,
                  chains: int = 4,
                  target_accept: float = 0.9,
                  random_seed: int = 42):
     """Run MCMC on a model returned by build_model."""
+    import pymc as pm
+
     with model:
         idata = pm.sample(
             draws=draws,

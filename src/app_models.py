@@ -130,7 +130,7 @@ def save_all_posteriors(posterior_dir: Path = POSTERIOR_DIR, draws: int = 2000,
 
         print(f"Sampling {label} -> {path}")
         idata = sample_idata_for_spec(spec, draws=draws)
-        idata.to_netcdf(path)
+        idata.to_netcdf(path, engine="h5netcdf")
         written.append(path)
 
     return written
@@ -148,7 +148,7 @@ def load_saved_models(posterior_dir: Path = POSTERIOR_DIR) -> dict:
             continue
 
         models[label] = {
-            "idata": az.from_netcdf(path),
+            "idata": az.from_netcdf(path, engine="h5netcdf"),
             "data": load_data_for_spec(spec),
         }
 

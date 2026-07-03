@@ -305,5 +305,7 @@ with col_out:
                 "(which also acts via non-LDL pathways). "
                 "The displayed RRR uses the fixed CTT 0.78 and does not include the literature "
                 "effect-size CI (0.76–0.80); that second layer was measured to widen the "
-                "interval by only ~1 percentage point."
+                "interval by only ~1 percentage point. "
+                "This tool is for education and portfolio demonstration only, not medical advice; "
+                "treatment decisions should be made with a licensed clinician."
             )

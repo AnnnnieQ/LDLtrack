@@ -1,0 +1,8 @@
+[theme]
+# Lock a light theme so the white metric cards and borders render as designed,
+# and match Streamlit widgets (slider, checkbox) to the LDLtrack teal accent.
+base = "light"
+primaryColor = "#126782"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f5f7fa"
+textColor = "#1f2937"

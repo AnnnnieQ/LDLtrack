@@ -87,6 +87,46 @@ MODEL_SPECS = {
         "mode": "intercept_only",
         "seed": 6,
     },
+    "Ezetimibe 10 mg": {
+        "slug": "ezetimibe_10mg_added_to_statin",
+        "kind": "single_row",
+        "category": "combination_drug",
+        "filters": {"intervention_specific": "ezetimibe"},
+        "alpha_mu": -24,
+        "alpha_sd": 8,
+        "mode": "intercept_only",
+        "seed": 7,
+    },
+    "PCSK9 inhibitor": {
+        "slug": "pcsk9_evolocumab_added_to_statin",
+        "kind": "single_row",
+        "category": "combination_drug",
+        "filters": {"intervention_specific": "evolocumab"},
+        "alpha_mu": -59,
+        "alpha_sd": 5,
+        "mode": "intercept_only",
+        "seed": 8,
+    },
+    "Portfolio diet (real-world)": {
+        "slug": "portfolio_diet_real_world",
+        "kind": "single_row",
+        "category": "diet",
+        "filters": {"intervention_subtype": "full_4_components_real_world"},
+        "alpha_mu": -11,
+        "alpha_sd": 5,
+        "mode": "intercept_only",
+        "seed": 9,
+    },
+    "Portfolio diet (strict)": {
+        "slug": "portfolio_diet_strict",
+        "kind": "single_row",
+        "category": "diet",
+        "filters": {"intervention_subtype": "full_4_components_strict_adherence"},
+        "alpha_mu": -21,
+        "alpha_sd": 5,
+        "mode": "intercept_only",
+        "seed": 10,
+    },
 }
 
 
@@ -130,7 +170,11 @@ def save_all_posteriors(posterior_dir: Path = POSTERIOR_DIR, draws: int = 2000,
 
         print(f"Sampling {label} -> {path}")
         idata = sample_idata_for_spec(spec, draws=draws)
-        idata.to_netcdf(path, engine="h5netcdf")
+        tmp_path = path.with_suffix(".tmp.nc")
+        if tmp_path.exists():
+            tmp_path.unlink()
+        idata.to_netcdf(tmp_path, engine="h5netcdf")
+        tmp_path.replace(path)
         written.append(path)
 
     return written

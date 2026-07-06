@@ -1,12 +1,12 @@
-# LDLtrack 🫀
+# LDLtrack
 
 > **A Bayesian decision-support tool for personalized LDL-C management** — synthesizing evidence from randomized controlled trials into individualized predictions with explicit uncertainty quantification.
 
-🚧 **Status**: Phase 2 in progress — Bayesian model implementation
+**Status**: Phase 3 in progress — deployed Streamlit demo + cardiovascular risk conversion
 
-🔗 **Live Demo**: *(coming soon)*
-📊 **Methodology**: [data/README.md](data/README.md)
-📝 **Data Sources**: [SOURCES.md](SOURCES.md)
+**Live Demo**: [ldltrack.streamlit.app](https://ldltrack.streamlit.app/)  
+**Methodology**: [data/README.md](data/README.md)  
+**Data Sources**: [SOURCES.md](SOURCES.md)
 
 ---
 
@@ -16,14 +16,13 @@ Existing LDL-C calculators (e.g., [lipidtools.com](https://lipidtools.com/calcul
 
 1. **Pharmacology only** — Lifestyle interventions (diet, exercise, weight loss) are not modeled, despite strong evidence for their LDL-lowering effects.
 2. **Single-point estimates** — No uncertainty quantification, despite substantial heterogeneity in individual response.
-3. **One-size-fits-all** — No effect modification by patient characteristics.
+3. **Limited personalization** — Most tools provide fixed population-average effects.
 
 LDLtrack addresses these gaps by:
 
 - ✅ Integrating pharmacological + dietary + lifestyle interventions
-- ✅ Using Bayesian hierarchical modeling with proper uncertainty propagation
+- ✅ Using Bayesian models with per-sample uncertainty propagation
 - ✅ Producing posterior predictive distributions rather than single numbers
-- ✅ Incorporating effect modification by user characteristics where evidence supports it
 
 ## Evidence Base
 
@@ -31,7 +30,7 @@ LDLtrack addresses these gaps by:
 
 | Category | Source | Rows |
 |---|---|---|
-| Statin (4 agents × 5 subgroups) | VOYAGER (Karlson 2015) | 20 |
+| Statin (2 agents × 2 doses × 5 populations) | VOYAGER (Karlson 2015) | 20 |
 | Weight loss (3 mechanisms) | Hasan 2020 | 3 |
 | Portfolio diet (efficacy + effectiveness) | Chiavaroli 2018 | 2 |
 | Soluble fiber (pooled + by type) | Brown 1999 | 4 |
@@ -42,18 +41,32 @@ LDLtrack addresses these gaps by:
 
 See [data/README.md](data/README.md) for per-paper extraction methodology.
 
+## Current Demo
+
+The deployed app currently supports:
+
+- Statins: atorvastatin 40/80 mg and rosuvastatin 20/40 mg
+- Plant sterols: dose-response prediction from 0.6-3.3 g/day
+- Aerobic/combined exercise
+- Multiplicative combination of selected interventions
+- Posterior uncertainty via pre-sampled NetCDF artifacts
+- Relative and absolute cardiovascular risk reduction estimates
+
 ## Tech Stack
 
-PyMC · ArviZ · NumPy · Pandas · Plotly · Streamlit
+PyMC · ArviZ · NumPy · Pandas · Streamlit
 
 ## Roadmap
 
 - [x] **Phase 1** — Evidence extraction from RCTs and meta-analyses (8 papers, 39 rows)
-- [ ] **Phase 2** — Bayesian model in PyMC + toy Streamlit demo
-    - [ ] Milestone 2.1: PyMC + Bayesian basics
-    - [ ] Milestone 2.2: Single-intervention LDLtrack model
-    - [ ] Milestone 2.3: Multi-intervention combination + Streamlit demo
-- [ ] **Phase 3** — Schema v2 refactor, CVD risk reduction, full UI polish, deployment
+- [x] **Phase 2** — Bayesian model in PyMC + toy Streamlit demo
+    - [x] Milestone 2.1: PyMC + Bayesian basics
+    - [x] Milestone 2.2: Single-intervention LDLtrack model
+    - [x] Milestone 2.3: Multi-intervention combination + Streamlit demo
+- [ ] **Phase 3** — CVD risk conversion, UI polish, deployment, schema v2 refactor
+    - [x] Milestone 3.1: Cardiovascular risk conversion
+    - [x] Milestone 3.4: UI polish + public Streamlit deployment
+    - [ ] Schema v2 refactor and additional intervention support
 
 Detailed feature plans in [docs/feature_roadmap.md](docs/feature_roadmap.md).
 

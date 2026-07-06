@@ -10,6 +10,89 @@ from src.model_v1 import predict, combine
 from src.cvd_risk import cvd_rrr, cvd_arr
 
 # ---------------------------------------------------------------------------
+# Theme, logo, and animation (injected once)
+# ---------------------------------------------------------------------------
+
+LDL_CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --ldl-teal: #126782;
+  --ldl-teal-mid: #219ebc;
+  --ldl-teal-light: #b8e0ea;
+  --ldl-ink: #1f2937;
+  --ldl-muted: #6b7280;
+  --ldl-border: #e6e9ee;
+}
+
+html, body, .stApp { font-family: 'Inter', -apple-system, BlinkMacSystemFont,
+  "Segoe UI", Roboto, sans-serif; }
+
+/* Streamlit's fixed top toolbar is transparent and floats over the content, so
+   anything scrolled to the very top (e.g. the chart) gets clipped under it.
+   Hide it — the menu isn't needed for this demo. */
+[data-testid="stHeader"] { display: none; }
+
+/* Tighten the default page frame and cap line length. */
+.block-container { padding-top: 2.1rem; padding-bottom: 3rem; max-width: 1180px; }
+
+/* Header / logo */
+.ldl-header { display: flex; align-items: center; margin: 0 0 2px 0; }
+.ldl-wordmark { font-size: 1.95rem; font-weight: 700; letter-spacing: -0.025em;
+  color: var(--ldl-ink); line-height: 1; }
+.ldl-wordmark .accent { color: var(--ldl-teal); }
+
+/* Metric cards */
+[data-testid="stMetric"] {
+  background: #ffffff;
+  border: 1px solid var(--ldl-border);
+  border-radius: 12px;
+  padding: 14px 16px 12px 16px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+  transition: transform .18s ease, box-shadow .18s ease;
+  animation: ldlFadeUp .45s ease both;
+}
+[data-testid="stMetric"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(18, 103, 130, 0.12);
+}
+[data-testid="stMetricLabel"] p { font-weight: 600; color: var(--ldl-muted); }
+[data-testid="stMetricValue"] { color: var(--ldl-ink); font-weight: 700; }
+
+/* Gentle stagger across the metric row */
+[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stMetric"] { animation-delay: .07s; }
+[data-testid="stHorizontalBlock"] > div:nth-child(3) [data-testid="stMetric"] { animation-delay: .14s; }
+
+/* Keyframes */
+@keyframes ldlFadeUp { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+@keyframes ldlGrowX  { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes ldlPop {
+  0%   { opacity: 0; transform: scale(.4); }
+  60%  { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes ldlFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Respect users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  [data-testid="stMetric"], .ldl-anim-card, .ldl-anim-bar,
+  .ldl-anim-band, .ldl-anim-marker, .ldl-anim-fade {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+</style>
+"""
+
+# Wordmark-only header — minimal, no icon/badge. "track" carries the teal accent.
+LDL_HEADER = """
+<div class="ldl-header">
+  <span class="ldl-wordmark">LDL<span class="accent">track</span></span>
+</div>
+"""
+
+# ---------------------------------------------------------------------------
 # Model cache
 # ---------------------------------------------------------------------------
 
@@ -30,9 +113,17 @@ def load_all_models():
 # App
 # ---------------------------------------------------------------------------
 
-st.set_page_config(page_title="LDLtrack", layout="wide")
-st.title("LDLtrack")
-st.caption("Bayesian LDL reduction estimator — combines evidence from landmark RCTs.")
+st.set_page_config(page_title="LDLtrack", page_icon="📉", layout="wide")
+st.markdown(LDL_CSS, unsafe_allow_html=True)
+st.markdown(LDL_HEADER, unsafe_allow_html=True)
+st.caption(
+    "Choose LDL-lowering options you are considering, then see the predicted "
+    "LDL change and estimated cardiovascular risk reduction."
+)
+st.info(
+    "Educational portfolio demo only — not medical advice. Review treatment "
+    "decisions with a licensed clinician."
+)
 
 models = load_all_models()
 
@@ -56,8 +147,34 @@ with col_in:
     st.markdown("---")
     st.markdown("**Statin**")
     statin_choice = st.selectbox("Drug and dose", ["None"] + list(STATIN_OPTIONS.keys()))
+    statin_selected = statin_choice != "None"
+
+    st.markdown("**Add-on medication**")
+    if not statin_selected:
+        st.session_state["ezetimibe_on"] = False
+        st.session_state["pcsk9_on"] = False
+    ezetimibe_on = st.checkbox(
+        "Add ezetimibe",
+        key="ezetimibe_on",
+        disabled=not statin_selected,
+    )
+    pcsk9_on = st.checkbox(
+        "Add PCSK9 inhibitor",
+        key="pcsk9_on",
+        disabled=not statin_selected,
+    )
+    if not statin_selected:
+        st.caption("Ezetimibe and PCSK9 inhibitor estimates require a statin background.")
 
     st.markdown("---")
+    st.markdown("**Diet and supplements**")
+    portfolio_on = st.checkbox("Include Portfolio diet")
+    portfolio_choice = st.selectbox(
+        "Portfolio diet adherence",
+        ["Real-world adherence", "Strict efficacy trial"],
+        disabled=not portfolio_on,
+    )
+
     st.markdown("**Plant sterols**")
     sterols_on   = st.checkbox("Include plant sterols")
     sterols_dose = st.slider("Dose (g/day)", 0.6, 3.3, 2.0, step=0.1,
@@ -76,6 +193,26 @@ if statin_choice != "None":
     predictions.append(predict(m["idata"], m["data"], baseline_ldl=baseline_ldl))
     layer_labels.append(statin_choice)
 
+if ezetimibe_on:
+    m = models["Ezetimibe 10 mg"]
+    predictions.append(predict(m["idata"], m["data"], baseline_ldl=baseline_ldl))
+    layer_labels.append("Ezetimibe 10 mg")
+
+if pcsk9_on:
+    m = models["PCSK9 inhibitor"]
+    predictions.append(predict(m["idata"], m["data"], baseline_ldl=baseline_ldl))
+    layer_labels.append("PCSK9 inhibitor")
+
+if portfolio_on:
+    portfolio_key = (
+        "Portfolio diet (strict)"
+        if portfolio_choice == "Strict efficacy trial"
+        else "Portfolio diet (real-world)"
+    )
+    m = models[portfolio_key]
+    predictions.append(predict(m["idata"], m["data"], baseline_ldl=baseline_ldl))
+    layer_labels.append(portfolio_key)
+
 if sterols_on:
     m = models["plant_sterols"]
     predictions.append(predict(m["idata"], m["data"],
@@ -92,7 +229,10 @@ with col_out:
     st.subheader("Results")
 
     if not predictions:
-        st.info("Select at least one intervention to see a prediction.")
+        st.info(
+            "Select at least one intervention on the left to see a prediction. "
+            "Example: choose a statin, add plant sterols, or include aerobic exercise."
+        )
     else:
         result = combine(baseline_ldl, predictions)
 
@@ -110,6 +250,12 @@ with col_out:
         rrr_lo   = np.percentile(rrr_samples, 2.5) * 100
         rrr_hi   = np.percentile(rrr_samples, 97.5) * 100
 
+        st.markdown(
+            f"**Summary:** Your LDL is predicted to move from "
+            f"**{baseline_ldl:.0f}** to about **{final_mean:.1f} mg/dL**, "
+            f"with an estimated **{rrr_mean:.1f}% relative cardiovascular risk reduction**."
+        )
+
         metric_cols = st.columns(3 if baseline_risk > 0 else 2)
         with metric_cols[0]:
             st.metric(
@@ -122,7 +268,7 @@ with col_out:
             st.metric(
                 label="Relative cardiovascular risk reduction",
                 value=f"{rrr_mean:.1f}%",
-                delta=f"95% CrI {rrr_lo:.1f}–{rrr_hi:.1f}%",
+                delta=f"Likely range {rrr_lo:.1f}-{rrr_hi:.1f}%",
                 delta_color="off",
             )
         if baseline_risk > 0:
@@ -134,7 +280,7 @@ with col_out:
                 st.metric(
                     label="Absolute cardiovascular risk reduction",
                     value=f"{arr_mean:.1f} pp",
-                    delta=f"95% CrI {arr_lo:.1f}–{arr_hi:.1f} pp",
+                    delta=f"Likely range {arr_lo:.1f}-{arr_hi:.1f} pp",
                     delta_color="off",
                 )
 
@@ -158,15 +304,19 @@ with col_out:
             if mean_pos < baseline_pos
             else "linear-gradient(90deg, #219ebc 0%, #b8e0ea 100%)"
         )
+        # Grow the reduction bar outward from the baseline end so the animation
+        # reads as "starting LDL moving toward the predicted value".
+        reduction_origin = "right" if mean_pos < baseline_pos else "left"
 
         st.markdown(
             f"""
-            <div style="
+            <div class="ldl-anim-card" style="
                 margin: 1.2rem 0 1.4rem 0;
                 padding: 1.15rem 1.2rem 1rem 1.2rem;
                 border: 1px solid #e5e7eb;
                 border-radius: 10px;
                 background: #ffffff;
+                animation: ldlFadeUp .5s ease both;
             ">
               <div style="
                   display: flex;
@@ -194,7 +344,7 @@ with col_out:
                     border-radius: 999px;
                     background: #eef2f7;
                 "></div>
-                <div style="
+                <div class="ldl-anim-bar" style="
                     position: absolute;
                     left: {reduction_left:.2f}%;
                     width: {reduction_width:.2f}%;
@@ -203,8 +353,10 @@ with col_out:
                     border-radius: 999px;
                     background: {reduction_gradient};
                     opacity: 0.82;
+                    transform-origin: {reduction_origin};
+                    animation: ldlGrowX .6s .12s cubic-bezier(.22,.61,.36,1) both;
                 "></div>
-                <div style="
+                <div class="ldl-anim-band" style="
                     position: absolute;
                     left: {lo_pos:.2f}%;
                     width: {hi_pos - lo_pos:.2f}%;
@@ -213,8 +365,10 @@ with col_out:
                     border-radius: 999px;
                     background: rgba(18, 103, 130, 0.16);
                     border: 1px solid rgba(18, 103, 130, 0.22);
+                    transform-origin: center;
+                    animation: ldlGrowX .55s .18s ease-out both;
                 "></div>
-                <div style="
+                <div class="ldl-anim-marker" style="
                     position: absolute;
                     left: {mean_pos:.2f}%;
                     top: 21px;
@@ -225,6 +379,7 @@ with col_out:
                     background: #126782;
                     border: 3px solid #ffffff;
                     box-shadow: 0 2px 8px rgba(18, 103, 130, 0.25);
+                    animation: ldlPop .5s .34s cubic-bezier(.22,.61,.36,1) both;
                 "></div>
                 <div style="
                     position: absolute;
@@ -234,7 +389,7 @@ with col_out:
                     height: 26px;
                     border-left: 2px dashed #475569;
                 "></div>
-                <div style="
+                <div class="ldl-anim-fade" style="
                     position: absolute;
                     left: {mean_pos:.2f}%;
                     top: 47px;
@@ -243,6 +398,7 @@ with col_out:
                     font-size: 0.88rem;
                     font-weight: 700;
                     white-space: nowrap;
+                    animation: ldlFadeIn .4s .42s ease both;
                 ">
                   predicted {final_mean:.1f}
                 </div>
@@ -292,6 +448,9 @@ with col_out:
                 "in the average dose-response estimated from clinical trials — not a guarantee "
                 "that your LDL will fall within this range. Individual response varies. "
                 "Exercise effect (Smart 2024) is not stratified by intensity or frequency. "
+                "Ezetimibe and PCSK9 inhibitor estimates come from trials where patients were "
+                "already taking statins, so the app only enables them after a statin is selected. "
+                "Portfolio diet estimates were measured on top of an NCEP Step II diet background. "
                 "Individual contributions are order-dependent and shown for illustration only; "
                 "the combined total is order-independent. "
                 "When multiple aggressive interventions are combined, the multiplicative model "

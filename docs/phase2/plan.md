@@ -38,9 +38,9 @@ should finish by ~mid-June 2026, leaving Phase 3 polish through summer.
   - 3 milestones (below)
   - Realistic estimate: ~3 weeks
 
-- **Phase 3 — Refinement** (not yet planned)
+- **Phase 3 — Refinement** ⏳ IN PROGRESS
   - Schema v2 refactor (resolve the 6 Known Schema Issues)
-  - CVD risk reduction calculation (Mach 2020 formula)
+  - CVD risk reduction calculation
   - Full Streamlit UI polish + deployment
 
 Note: project uses "Phase" naming, NOT "Week" naming. Earlier handoff
@@ -213,7 +213,12 @@ mg_dL → % unit conversion in predict(); edge-case validated.
 ## Current Status
 
   Phase 2 complete. Milestones 2.1, 2.2, 2.3 all done.
-  Deliverables: PyMC Bayesian models (intercept_only + dose_response modes),
-  data_loader, predict(), combine(), milestone22/23 validation notebooks,
-  and localhost Streamlit demo (app.py).
-  Next: Phase 3 — schema v2 refactor, CVD risk calculation, UI polish, deployment.
+  Phase 3 is in progress. Milestone 3.1 (cardiovascular risk conversion)
+  is complete. Milestone 3.4 (UI polish + public deployment) is complete:
+  https://ldltrack.streamlit.app/
+
+  Current deployed deliverables: Streamlit app with pre-sampled NetCDF
+  posteriors, statin/plant sterol/exercise predictions, multiplicative
+  combination, cardiovascular risk conversion, and public demo URL.
+
+  Next: Phase 3 schema v2 refactor and additional intervention support.

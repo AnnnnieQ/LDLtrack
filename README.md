@@ -2,7 +2,7 @@
 
 > **A Bayesian decision-support tool for personalized LDL-C management** — synthesizing evidence from randomized controlled trials into individualized predictions with explicit uncertainty quantification.
 
-**Status**: Phase 3 in progress — deployed Streamlit demo + cardiovascular risk conversion
+**Status**: Phase 3 core complete — deployed demo with 8 intervention options; schema v2 deferred to backlog
 
 **Live Demo**: [ldltrack.streamlit.app](https://ldltrack.streamlit.app/)  
 **Methodology**: [data/README.md](data/README.md)  
@@ -43,14 +43,22 @@ See [data/README.md](data/README.md) for per-paper extraction methodology.
 
 ## Current Demo
 
-The deployed app currently supports:
+The deployed app currently supports 8 intervention options:
 
-- Statins: atorvastatin 40/80 mg and rosuvastatin 20/40 mg
-- Plant sterols: dose-response prediction from 0.6-3.3 g/day
-- Aerobic/combined exercise
-- Multiplicative combination of selected interventions
-- Posterior uncertainty via pre-sampled NetCDF artifacts
-- Relative and absolute cardiovascular risk reduction estimates
+| Intervention | App behavior |
+|---|---|
+| Statin | User selects atorvastatin 40/80 mg or rosuvastatin 20/40 mg |
+| Ezetimibe | Enabled only after a statin is selected |
+| PCSK9 inhibitor | Enabled only after a statin is selected |
+| Portfolio diet | User selects real-world adherence or strict efficacy-trial setting |
+| Plant sterols | Dose-response prediction from 0.6-3.3 g/day |
+| Soluble fiber | Per-g dose input up to 8 g/day |
+| Lifestyle weight loss | Per-kg effect with lb input in the app |
+| Aerobic/combined exercise | Single pooled aerobic/combined exercise estimate |
+
+Outputs include multiplicative combination of selected interventions,
+posterior uncertainty via pre-sampled NetCDF artifacts, and relative and
+absolute cardiovascular risk reduction estimates.
 
 ## Tech Stack
 
@@ -63,12 +71,14 @@ PyMC · ArviZ · NumPy · Pandas · Streamlit
     - [x] Milestone 2.1: PyMC + Bayesian basics
     - [x] Milestone 2.2: Single-intervention LDLtrack model
     - [x] Milestone 2.3: Multi-intervention combination + Streamlit demo
-- [ ] **Phase 3** — CVD risk conversion, UI polish, deployment, schema v2 refactor
+- [ ] **Phase 3** — CVD risk conversion, intervention expansion, UI polish, deployment, schema v2 backlog
     - [x] Milestone 3.1: Cardiovascular risk conversion
+    - [x] Milestone 3.2: Schema v2 skipped by decision; deferred to backlog
+    - [x] Milestone 3.3: Additional intervention support
     - [x] Milestone 3.4: UI polish + public Streamlit deployment
-    - [ ] Schema v2 refactor and additional intervention support
+    - [ ] Schema v2 refactor and deeper validation case studies
 
-Detailed feature plans in [docs/feature_roadmap.md](docs/feature_roadmap.md).
+Current project plan and status are tracked in [docs/project_plan.md](docs/project_plan.md).
 
 ## ⚠️ Disclaimer
 

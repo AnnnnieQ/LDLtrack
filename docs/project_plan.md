@@ -1,8 +1,8 @@
-# Phase 2 Plan & Project Context
+# Project Plan & Context
 
 This document captures planning context not otherwise visible in the repo
 (milestones, day-by-day schedule, working preferences, decisions made in
-planning discussions). Claude Code should read this first each session.
+planning discussions). Read this first each session.
 
 ---
 
@@ -38,10 +38,11 @@ should finish by ~mid-June 2026, leaving Phase 3 polish through summer.
   - 3 milestones (below)
   - Realistic estimate: ~3 weeks
 
-- **Phase 3 — Refinement** ⏳ IN PROGRESS
-  - Schema v2 refactor (resolve the 6 Known Schema Issues)
-  - CVD risk reduction calculation
-  - Full Streamlit UI polish + deployment
+- **Phase 3 — Refinement** ✅ CORE COMPLETE / BACKLOG OPEN
+  - Cardiovascular risk reduction calculation
+  - Expanded intervention support without changing the CSV schema
+  - Full Streamlit UI polish + public deployment
+  - Schema v2 refactor deferred to backlog
 
 Note: project uses "Phase" naming, NOT "Week" naming. Earlier handoff
 docs may say "Week 1/2/3" — that scheme is deprecated. Phase 1 actually
@@ -60,9 +61,9 @@ combination of multiple interventions + a quick Streamlit demo.
 **Explicitly OUT of Phase 2 scope** (deferred to Phase 3):
 - Schema v2 refactor (splitting population/n columns, adding
   effect_timing/baseline_timing/cost_tier/control_type fields)
-- CVD risk reduction calculation
+- CVD risk reduction calculation (completed in Phase 3)
 - Full polished UI / multi-step wizard
-- Deployment (Streamlit Cloud / Hugging Face)
+- Deployment (Streamlit Cloud / Hugging Face; completed in Phase 3)
 - Adding more papers
 - Hierarchical model with subgroup covariates
 
@@ -119,23 +120,58 @@ Delivered: app.py (statin × 4 + plant sterols dose-response + exercise);
 combine() with independent shuffle; build_model mode flag; load_single_row;
 mg_dL → % unit conversion in predict(); edge-case validated.
 
+### Milestone 3.1 — Cardiovascular risk conversion ✅ COMPLETE
+
+Goal: convert predicted LDL reduction into estimated cardiovascular risk
+reduction using the CTT 0.78 relative risk per 1 mmol/L LDL-C reduction
+anchor.
+
+Delivered: src/cvd_risk.py, tests, validation notebook, relative and
+absolute cardiovascular risk reduction outputs in the deployed app.
+
+### Milestone 3.2 — Schema v2 refactor SKIPPED BY DECISION
+
+Decision: do not restructure the CSV before expanding the product surface.
+Keep the v1 schema stable and handle unit conversion + on_top_of logic in
+the app/model layer.
+
+Deferred: population/n semantics, timing fields, control type, cost tier,
+and broader schema cleanup.
+
+### Milestone 3.3 — Additional intervention support ✅ COMPLETE
+
+Goal: add the remaining intervention rows that can be supported without a
+CSV schema change.
+
+Delivered: ezetimibe, PCSK9 inhibitor, Portfolio diet, soluble fiber, and
+lifestyle weight loss. on_top_of gating is implemented for statin add-on
+medications. per-unit effects (mg_dL_per_kg and mg_dL_per_g) are converted
+at prediction time using user-entered dose.
+
+### Milestone 3.4 — UI polish + public deployment ✅ COMPLETE
+
+Goal: turn the localhost demo into a portfolio-ready public app.
+
+Delivered: Streamlit Cloud deployment, pre-sampled NetCDF posterior
+artifacts, streamlined runtime dependencies, modern UI styling, visible
+disclaimer, bullet chart, and public demo URL:
+https://ldltrack.streamlit.app/
+
 ---
 
 ## Key Design Questions for Milestone 2.2 (resolved in 2.2/2.3)
 
 1. **Unit handling** — Resolved: mg/dL→% conversion done in predict() at
-   inference time using user baseline as the denominator; applied only to
-   the exercise row (Smart 2024 reports in mg/dL). mg_dL_per_kg and
-   mg_dL_per_g units are not yet handled — rows using those units are
-   excluded from the Phase 2 MVP and deferred to Phase 3 schema v2.
+   inference time using user baseline as the denominator. mg_dL_per_kg
+   and mg_dL_per_g effects are stored as per-unit posteriors and multiplied
+   by user-entered dose at prediction time.
 2. **Combination** — Resolved: multiplicative on % scale via combine() with
-   per-sample shuffle for independence. on_top_of constraints NOT implemented
-   in the 3-intervention MVP (statin, plant sterols, exercise have no
-   mutual dependencies); deferred to Phase 3.
+   per-sample shuffle for independence. on_top_of gating is implemented for
+   ezetimibe and PCSK9 inhibitor, which require a statin background.
 3. **Priors** — Resolved: alpha_mu from paper point estimates; alpha_sd set
    to ~3× CI half-width so the single-row likelihood dominates.
-4. **Missing SE rows** — Resolved: Cannon 2015 and Smart 2024 RT-null row
-   excluded (no SE); both deferred to Phase 3.
+4. **Missing SE rows** — Resolved: Cannon 2015 was added in Milestone 3.3
+   with a wider fallback SE; Smart 2024 RT-null row remains excluded.
 5. **Output** — Resolved: predict() returns posterior theta_new (% change)
    and ldl_final (mg/dL); 95% CrI displayed in Streamlit app.
 
@@ -197,28 +233,40 @@ mg_dL → % unit conversion in predict(); edge-case validated.
 
 ---
 
-## Known Limitations (deferred to Phase 3)
+## Backlog / Deferred Items
 
 - **Exercise dose-response**: Smart 2024's LDL meta-regression included no
   exercise-dose predictor (only age and study size), so the exercise effect
-  is not stratified by frequency or intensity. Phase 3 should seek a
+  is not stratified by frequency or intensity. Future work should seek a
   dose-stratified LDL meta-analysis.
 - **Biological floor**: The multiplicative combination applies no biological
   floor. At low baseline LDL with multiple strong interventions, the model
-  can predict <~25 mg/dL — a clinically implausible level. Phase 3 should
+  can predict <~25 mg/dL — a clinically implausible level. Future work should
   add a soft floor (e.g., logistic saturation or a 25 mg/dL lower bound).
+- **Schema v2**: resolve the 6 Known Schema Issues in data/README.md,
+  including population granularity, n semantics, timing fields, and
+  intervention_subtype semantics.
+- **Statin subgroup model**: extend VOYAGER modeling beyond all_patients
+  rows to use the 5 subgroup populations, likely requiring a hierarchical
+  model with subgroup covariates.
+- **Effect modification**: move patient-characteristic effects from roadmap
+  to implementation only where evidence supports subgroup-specific effects.
+- **Mechanism-specific CVD risk**: the current app applies the CTT statin
+  risk anchor across all LDL-lowering mechanisms. Future work should separate
+  LDL-mediated benefit from mechanism-specific non-LDL effects.
 
 ---
 
 ## Current Status
 
   Phase 2 complete. Milestones 2.1, 2.2, 2.3 all done.
-  Phase 3 is in progress. Milestone 3.1 (cardiovascular risk conversion)
-  is complete. Milestone 3.4 (UI polish + public deployment) is complete:
-  https://ldltrack.streamlit.app/
+  Phase 3 core is complete. Milestones 3.1, 3.3, and 3.4 are complete.
+  Milestone 3.2 was skipped by decision and moved to backlog.
 
   Current deployed deliverables: Streamlit app with pre-sampled NetCDF
-  posteriors, statin/plant sterol/exercise predictions, multiplicative
-  combination, cardiovascular risk conversion, and public demo URL.
+  posteriors, 8 intervention options, multiplicative combination,
+  cardiovascular risk conversion, modern UI, and public demo URL:
+  https://ldltrack.streamlit.app/
 
-  Next: Phase 3 schema v2 refactor and additional intervention support.
+  Next: portfolio documentation polish, schema v2 backlog, and any
+  interview-facing validation notebooks or case studies.

@@ -127,6 +127,26 @@ MODEL_SPECS = {
         "mode": "intercept_only",
         "seed": 10,
     },
+    "fiber": {
+        "slug": "fiber_soluble_pooled",
+        "kind": "single_row",
+        "category": "fiber",
+        "filters": {"intervention_specific": "soluble_fiber_pooled"},
+        "alpha_mu": -2.2,
+        "alpha_sd": 1.0,
+        "mode": "intercept_only",
+        "seed": 11,
+    },
+    "weight_loss": {
+        "slug": "weight_loss_lifestyle",
+        "kind": "single_row",
+        "category": "weight_change",
+        "filters": {"intervention_subtype": "via_diet_exercise"},
+        "alpha_mu": -1.28,
+        "alpha_sd": 0.8,
+        "mode": "intercept_only",
+        "seed": 12,
+    },
 }
 
 

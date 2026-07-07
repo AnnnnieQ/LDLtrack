@@ -96,9 +96,12 @@ LDL_HEADER = """
 # Model cache
 # ---------------------------------------------------------------------------
 
+MODEL_CACHE_VERSION = "3.3B_per_unit_interventions"
+
 @st.cache_resource(show_spinner="Loading pre-sampled posteriors...")
-def load_all_models():
+def load_all_models(model_cache_version: str):
     """Load app models from pre-sampled posterior files."""
+    _ = model_cache_version
     try:
         return load_saved_models()
     except FileNotFoundError as err:
@@ -125,7 +128,7 @@ st.info(
     "decisions with a licensed clinician."
 )
 
-models = load_all_models()
+models = load_all_models(MODEL_CACHE_VERSION)
 
 col_in, col_out = st.columns([1, 1.6], gap="large")
 
@@ -180,8 +183,29 @@ with col_in:
     sterols_dose = st.slider("Dose (g/day)", 0.6, 3.3, 2.0, step=0.1,
                              disabled=not sterols_on)
 
+    fiber_on = st.checkbox("Include soluble fiber")
+    fiber_dose = st.number_input(
+        "Fiber (g/day)",
+        min_value=0.0,
+        max_value=8.0,
+        value=5.0,
+        step=0.5,
+        disabled=not fiber_on,
+    )
+    if fiber_on:
+        st.caption("Fiber estimates are capped at the practical evidence range of 8 g/day.")
+
     st.markdown("---")
-    st.markdown("**Exercise**")
+    st.markdown("**Lifestyle**")
+    weight_loss_on = st.checkbox("Include weight loss")
+    weight_loss_lb = st.number_input(
+        "Weight to lose (lb)",
+        min_value=0,
+        max_value=60,
+        value=10,
+        step=1,
+        disabled=not weight_loss_on,
+    )
     exercise_on = st.checkbox("Include aerobic / combined exercise")
 
 # ── Compute predictions ──────────────────────────────────────────────────────
@@ -218,6 +242,19 @@ if sterols_on:
     predictions.append(predict(m["idata"], m["data"],
                                baseline_ldl=baseline_ldl, dose_query=sterols_dose))
     layer_labels.append(f"Plant sterols {sterols_dose:.1f} g/day")
+
+if fiber_on:
+    m = models["fiber"]
+    predictions.append(predict(m["idata"], m["data"],
+                               baseline_ldl=baseline_ldl, unit_dose=fiber_dose))
+    layer_labels.append(f"Soluble fiber {fiber_dose:.1f} g/day")
+
+if weight_loss_on:
+    m = models["weight_loss"]
+    weight_loss_kg = weight_loss_lb * 0.4536
+    predictions.append(predict(m["idata"], m["data"],
+                               baseline_ldl=baseline_ldl, unit_dose=weight_loss_kg))
+    layer_labels.append(f"Weight loss {weight_loss_lb} lb")
 
 if exercise_on:
     m = models["exercise"]
@@ -451,6 +488,13 @@ with col_out:
                 "Ezetimibe and PCSK9 inhibitor estimates come from trials where patients were "
                 "already taking statins, so the app only enables them after a statin is selected. "
                 "Portfolio diet estimates were measured on top of an NCEP Step II diet background. "
+                "Weight-loss effect is from a severely obese population (mean BMI ~36); "
+                "users with normal or mildly elevated BMI may see a smaller LDL effect. "
+                "Weight loss achieved through diet or exercise may overlap with those "
+                "interventions if also selected, which can double-count some benefit. "
+                "Fiber effect uses the practical dose range (<=8 g/day) and a "
+                "higher-baseline trial population; absolute effect may be smaller at "
+                "lower baseline LDL. "
                 "Individual contributions are order-dependent and shown for illustration only; "
                 "the combined total is order-independent. "
                 "When multiple aggressive interventions are combined, the multiplicative model "

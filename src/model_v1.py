@@ -94,7 +94,8 @@ def sample_model(model: "pm.Model",
 def predict(idata,
             data: dict,
             baseline_ldl: float,
-            dose_query: float = None) -> dict:
+            dose_query: float = None,
+            unit_dose: float = None) -> dict:
     """Compute predictions from posterior samples (no re-sampling needed).
 
     Works for any baseline_ldl without rebuilding the model. For
@@ -112,6 +113,10 @@ def predict(idata,
     dose_query : float or None
         Dose in original units (uncentered). Required for dose_response
         mode; ignored for intercept_only.
+    unit_dose : float or None
+        User-selected dose multiplier for per-unit effects. Required when
+        data["unit"] is "mg_dL_per_kg" or "mg_dL_per_g". For per-kg effects,
+        callers should pass kilograms, not pounds.
 
     Returns
     -------
@@ -140,7 +145,12 @@ def predict(idata,
     # so that combine() and ldl_final both operate on a consistent % scale.
     # exercise_pct = -7.22 / baseline_ldl * 100  (user baseline as denominator)
     unit = data.get("unit", "percent")
-    if unit == "mg_dL":
+    if unit in {"mg_dL_per_kg", "mg_dL_per_g"}:
+        if unit_dose is None:
+            raise ValueError(f"unit_dose is required for unit={unit!r}.")
+        theta_new_s = theta_new_s * float(unit_dose)
+
+    if unit in {"mg_dL", "mg_dL_per_kg", "mg_dL_per_g"}:
         theta_new_s = theta_new_s / baseline_ldl * 100
 
     ldl_final_s = baseline_ldl * (1 + theta_new_s / 100)

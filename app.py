@@ -64,6 +64,24 @@ html, body, .stApp { font-family: 'Inter', -apple-system, BlinkMacSystemFont,
 [data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stMetric"] { animation-delay: .07s; }
 [data-testid="stHorizontalBlock"] > div:nth-child(3) [data-testid="stMetric"] { animation-delay: .14s; }
 
+/* Keep the results column visible while scrolling through the longer inputs. */
+@media (min-width: 900px) {
+  [data-testid="stHorizontalBlock"]:has(> div:first-child [data-testid="stNumberInput"])
+    > div:nth-child(2) {
+    position: sticky;
+    top: 1rem;
+    align-self: flex-start;
+  }
+}
+
+/* On mobile, show Results before the longer Inputs form. */
+@media (max-width: 899px) {
+  [data-testid="stHorizontalBlock"]:has(> div:first-child [data-testid="stNumberInput"])
+    > div:nth-child(2) {
+    order: -1;
+  }
+}
+
 /* Keyframes */
 @keyframes ldlFadeUp { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
 @keyframes ldlGrowX  { from { transform: scaleX(0); } to { transform: scaleX(1); } }
@@ -261,66 +279,82 @@ if exercise_on:
     predictions.append(predict(m["idata"], m["data"], baseline_ldl=baseline_ldl))
     layer_labels.append("Aerobic/combined exercise")
 
+result = None
+final_mean = final_lo = final_hi = eff_mean = None
+rrr_samples = None
+rrr_mean = rrr_lo = rrr_hi = None
+
+if predictions:
+    result = combine(baseline_ldl, predictions)
+
+    final_mean = result["ldl_final"].mean()
+    final_lo   = np.percentile(result["ldl_final"], 2.5)
+    final_hi   = np.percentile(result["ldl_final"], 97.5)
+    eff_mean   = result["total_effect"].mean()
+
+    # Per-sample RRR from the LDL-reduction posterior. Fixed CTT 0.78
+    # (sample_effect=False) — the effect-size CI second layer is omitted by
+    # design (it widens the interval by only ~1pp; see caveat below).
+    cvd = cvd_rrr(baseline_ldl, result["ldl_final"])
+    rrr_samples = cvd["rrr"]
+    rrr_mean = rrr_samples.mean() * 100
+    rrr_lo   = np.percentile(rrr_samples, 2.5) * 100
+    rrr_hi   = np.percentile(rrr_samples, 97.5) * 100
+else:
+    result = {
+        "ldl_final": np.array([float(baseline_ldl)]),
+        "total_effect": np.array([0.0]),
+    }
+    final_mean = final_lo = final_hi = float(baseline_ldl)
+    eff_mean = 0.0
+    rrr_samples = np.array([0.0])
+    rrr_mean = rrr_lo = rrr_hi = 0.0
+
 # ── Outputs ──────────────────────────────────────────────────────────────────
 with col_out:
     st.subheader("Results")
 
-    if not predictions:
-        st.info(
-            "Select at least one intervention on the left to see a prediction. "
-            "Example: choose a statin, add plant sterols, or include aerobic exercise."
-        )
-    else:
-        result = combine(baseline_ldl, predictions)
-
-        final_mean = result["ldl_final"].mean()
-        final_lo   = np.percentile(result["ldl_final"], 2.5)
-        final_hi   = np.percentile(result["ldl_final"], 97.5)
-        eff_mean   = result["total_effect"].mean()
-
-        # Per-sample RRR from the LDL-reduction posterior. Fixed CTT 0.78
-        # (sample_effect=False) — the effect-size CI second layer is omitted by
-        # design (it widens the interval by only ~1pp; see caveat below).
-        cvd = cvd_rrr(baseline_ldl, result["ldl_final"])
-        rrr_samples = cvd["rrr"]
-        rrr_mean = rrr_samples.mean() * 100
-        rrr_lo   = np.percentile(rrr_samples, 2.5) * 100
-        rrr_hi   = np.percentile(rrr_samples, 97.5) * 100
-
+    if predictions:
         st.markdown(
             f"**Summary:** Your LDL is predicted to move from "
             f"**{baseline_ldl:.0f}** to about **{final_mean:.1f} mg/dL**, "
             f"with an estimated **{rrr_mean:.1f}% relative cardiovascular risk reduction**."
         )
+    else:
+        st.markdown(
+            f"**Summary:** No intervention selected yet. Your predicted LDL "
+            f"remains **{final_mean:.1f} mg/dL**."
+        )
 
-        metric_cols = st.columns(3 if baseline_risk > 0 else 2)
-        with metric_cols[0]:
+    metric_cols = st.columns(3 if baseline_risk > 0 else 2)
+    with metric_cols[0]:
+        st.metric(
+            label="Predicted final LDL",
+            value=f"{final_mean:.1f} mg/dL",
+            delta=f"{eff_mean:.1f}%  (95% CrI {final_lo:.1f}–{final_hi:.1f} mg/dL)",
+            delta_color="inverse",
+        )
+    with metric_cols[1]:
+        st.metric(
+            label="Relative cardiovascular risk reduction",
+            value=f"{rrr_mean:.1f}%",
+            delta=f"Likely range {rrr_lo:.1f}-{rrr_hi:.1f}%",
+            delta_color="off",
+        )
+    if baseline_risk > 0:
+        arr_out = cvd_arr(rrr_samples, baseline_risk)
+        arr_mean = arr_out["arr"].mean()
+        arr_lo   = np.percentile(arr_out["arr"], 2.5)
+        arr_hi   = np.percentile(arr_out["arr"], 97.5)
+        with metric_cols[2]:
             st.metric(
-                label="Predicted final LDL",
-                value=f"{final_mean:.1f} mg/dL",
-                delta=f"{eff_mean:.1f}%  (95% CrI {final_lo:.1f}–{final_hi:.1f} mg/dL)",
-                delta_color="inverse",
-            )
-        with metric_cols[1]:
-            st.metric(
-                label="Relative cardiovascular risk reduction",
-                value=f"{rrr_mean:.1f}%",
-                delta=f"Likely range {rrr_lo:.1f}-{rrr_hi:.1f}%",
+                label="Absolute cardiovascular risk reduction",
+                value=f"{arr_mean:.1f} pp",
+                delta=f"Likely range {arr_lo:.1f}-{arr_hi:.1f} pp",
                 delta_color="off",
             )
-        if baseline_risk > 0:
-            arr_out = cvd_arr(rrr_samples, baseline_risk)
-            arr_mean = arr_out["arr"].mean()
-            arr_lo   = np.percentile(arr_out["arr"], 2.5)
-            arr_hi   = np.percentile(arr_out["arr"], 97.5)
-            with metric_cols[2]:
-                st.metric(
-                    label="Absolute cardiovascular risk reduction",
-                    value=f"{arr_mean:.1f} pp",
-                    delta=f"Likely range {arr_lo:.1f}-{arr_hi:.1f} pp",
-                    delta_color="off",
-                )
 
+    if predictions:
         # Bullet chart: show the LDL reduction path, with the credible interval
         # around the predicted final LDL.
         scale_min = min(final_lo, baseline_ldl) - 10
@@ -478,37 +512,39 @@ with col_out:
                 f"- **{r['Intervention']}**: {r['Effect (%)']} "
                 f"→ {r['ΔLDLmg/dL']} mg/dL  (LDL: {r['LDL after']} mg/dL)"
             )
+    else:
+        st.caption("Choose interventions below to update this estimate.")
 
-        with st.expander("About this estimate"):
-            st.caption(
-                "The 95% credible interval (CrI) reflects uncertainty "
-                "in the average dose-response estimated from clinical trials — not a guarantee "
-                "that your LDL will fall within this range. Individual response varies. "
-                "Exercise effect (Smart 2024) is not stratified by intensity or frequency. "
-                "Ezetimibe and PCSK9 inhibitor estimates come from trials where patients were "
-                "already taking statins, so the app only enables them after a statin is selected. "
-                "Portfolio diet estimates were measured on top of an NCEP Step II diet background. "
-                "Weight-loss effect is from a severely obese population (mean BMI ~36); "
-                "users with normal or mildly elevated BMI may see a smaller LDL effect. "
-                "Weight loss achieved through diet or exercise may overlap with those "
-                "interventions if also selected, which can double-count some benefit. "
-                "Fiber effect uses the practical dose range (<=8 g/day) and a "
-                "higher-baseline trial population; absolute effect may be smaller at "
-                "lower baseline LDL. "
-                "Individual contributions are order-dependent and shown for illustration only; "
-                "the combined total is order-independent. "
-                "When multiple aggressive interventions are combined, the multiplicative model "
-                "can produce predictions below ~25 mg/dL — a level rarely seen clinically. "
-                "This is a mathematical artifact of stacking independent % reductions, "
-                "not a realistic forecast. The model applies no biological floor. "
-                "The 0.78 relative risk per mmol/L comes from statin trials (CTT); applying "
-                "it to plant sterols and exercise assumes the benefit per mmol/L is "
-                "mechanism-independent, which may overstate benefit if non-receptor-mediated "
-                "LDL lowering is less effective, and may understate exercise's total benefit "
-                "(which also acts via non-LDL pathways). "
-                "The displayed RRR uses the fixed CTT 0.78 and does not include the literature "
-                "effect-size CI (0.76–0.80); that second layer was measured to widen the "
-                "interval by only ~1 percentage point. "
-                "This tool is for education and portfolio demonstration only, not medical advice; "
-                "treatment decisions should be made with a licensed clinician."
-            )
+    with st.expander("About this estimate"):
+        st.caption(
+            "The 95% credible interval (CrI) reflects uncertainty "
+            "in the average dose-response estimated from clinical trials — not a guarantee "
+            "that your LDL will fall within this range. Individual response varies. "
+            "Exercise effect (Smart 2024) is not stratified by intensity or frequency. "
+            "Ezetimibe and PCSK9 inhibitor estimates come from trials where patients were "
+            "already taking statins, so the app only enables them after a statin is selected. "
+            "Portfolio diet estimates were measured on top of an NCEP Step II diet background. "
+            "Weight-loss effect is from a severely obese population (mean BMI ~36); "
+            "users with normal or mildly elevated BMI may see a smaller LDL effect. "
+            "Weight loss achieved through diet or exercise may overlap with those "
+            "interventions if also selected, which can double-count some benefit. "
+            "Fiber effect uses the practical dose range (<=8 g/day) and a "
+            "higher-baseline trial population; absolute effect may be smaller at "
+            "lower baseline LDL. "
+            "Individual contributions are order-dependent and shown for illustration only; "
+            "the combined total is order-independent. "
+            "When multiple aggressive interventions are combined, the multiplicative model "
+            "can produce predictions below ~25 mg/dL — a level rarely seen clinically. "
+            "This is a mathematical artifact of stacking independent % reductions, "
+            "not a realistic forecast. The model applies no biological floor. "
+            "The 0.78 relative risk per mmol/L comes from statin trials (CTT); applying "
+            "it to plant sterols and exercise assumes the benefit per mmol/L is "
+            "mechanism-independent, which may overstate benefit if non-receptor-mediated "
+            "LDL lowering is less effective, and may understate exercise's total benefit "
+            "(which also acts via non-LDL pathways). "
+            "The displayed RRR uses the fixed CTT 0.78 and does not include the literature "
+            "effect-size CI (0.76–0.80); that second layer was measured to widen the "
+            "interval by only ~1 percentage point. "
+            "This tool is for education and portfolio demonstration only, not medical advice; "
+            "treatment decisions should be made with a licensed clinician."
+        )
